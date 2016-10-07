@@ -5,9 +5,9 @@
  */
 
 /**
- * Hubzilla.
+ * Zap.
  *
- * Hubzilla is an open source decentralised communications
+ * Zap is an open source decentralised communications
  * platform combined with a decentralised identity/authentication framework
  * wrapped in an extensible content management system, providing website designers
  * the ability to embed fully decentralised communications and social tools
@@ -43,7 +43,7 @@ require_once('include/connections.php');
 require_once('include/account.php');
 
 
-define ( 'PLATFORM_NAME',           'hubzilla' );
+define ( 'PLATFORM_NAME',           'zap' );
 define ( 'STD_VERSION',             '1.15' );
 define ( 'ZOT_REVISION',            '1.1' );
 

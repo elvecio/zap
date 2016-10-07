@@ -31,13 +31,13 @@ App::$config['system']['timezone'] = '{{$timezone}}';
 // What is your site name? DO NOT ADD A TRAILING SLASH!
 
 App::$config['system']['baseurl'] = '{{$siteurl}}';
-App::$config['system']['sitename'] = "Hubzilla";
+App::$config['system']['sitename'] = "Zap";
 App::$config['system']['location_hash'] = '{{$site_id}}';
 
 // Choices are 'basic', 'standard', and 'pro'.
-// basic sets up the sevrer for basic social networking and removes "complicated" features
+// basic sets up the server for basic social networking and removes "complicated" features
 // standard provides most desired features except e-commerce
-// pro gives you access to everything
+// pro is a special role, if in doubt choose standard
 
 App::$config['system']['server_role'] = '{{$server_role}}';
 
