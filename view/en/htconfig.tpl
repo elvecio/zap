@@ -37,7 +37,9 @@ App::$config['system']['location_hash'] = '{{$site_id}}';
 // Choices are 'basic', 'standard', and 'pro'.
 // basic sets up the server for basic social networking and removes "complicated" features
 // standard provides most desired features except e-commerce
-// pro is a special role, if in doubt choose standard
+// pro disables protocol federation plugins and only supports the zot protocol
+// if you are in doubt or are unsure, it is strongly advised that you select 'standard'. 
+
 
 App::$config['system']['server_role'] = '{{$server_role}}';
 
