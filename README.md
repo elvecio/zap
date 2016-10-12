@@ -1,1 +1,1 @@
-This is ZAP!
+This is ZAP!, a decentralised web service.
