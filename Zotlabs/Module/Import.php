@@ -77,23 +77,27 @@ class Import extends \Zotlabs\Web\Controller {
 	
 			$channelname = substr($old_address,0,strpos($old_address,'@'));
 			$servername  = substr($old_address,strpos($old_address,'@')+1);
-	
-			$scheme = 'https://';
-			$api_path = '/api/red/channel/export/basic?f=&channel=' . $channelname;
+
+			$api_path = probe_api_path($servername);
+			if(! $api_path) {
+				notice( t('Unable to download data from old server') . EOL);
+				return;
+			}
+
+			$api_path .= 'channel/export/basic?f=&channel=' . $channelname;
 			if($import_posts)
 				$api_path .= '&posts=1';
 			$binary = false;
 			$redirects = 0;
 			$opts = array('http_auth' => $email . ':' . $password);
-			$url = $scheme . $servername . $api_path;
-			$ret = z_fetch_url($url, $binary, $redirects, $opts);
-			if(! $ret['success'])
-				$ret = z_fetch_url('http://' . $servername . $api_path, $binary, $redirects, $opts);
-			if($ret['success'])
+			$ret = z_fetch_url($api_path, $binary, $redirects, $opts);
+			if($ret['success']) {
 				$data = $ret['body'];
-			else
+			}
+			else {
 				notice( t('Unable to download data from old server') . EOL);
-	
+				return;
+			}
 		}
 	
 		if(! $data) {
@@ -297,9 +301,9 @@ class Import extends \Zotlabs\Web\Controller {
 	
 					dbesc_array($xchan);
 			
-					$r = dbq("INSERT INTO xchan (`" 
-						. implode("`, `", array_keys($xchan)) 
-						. "`) VALUES ('" 
+					$r = dbq("INSERT INTO xchan (" . TQUOT 
+						. implode(TQUOT . ", " . TQUOT, array_keys($xchan)) 
+						. TQUOT . ") VALUES ('" 
 						. implode("', '", array_values($xchan)) 
 						. "')" );
 	
@@ -383,9 +387,9 @@ class Import extends \Zotlabs\Web\Controller {
 					}
 	
 					dbesc_array($abook);
-					$r = dbq("INSERT INTO abook (`" 
-						. implode("`, `", array_keys($abook)) 
-						. "`) VALUES ('" 
+					$r = dbq("INSERT INTO abook (" . TQUOT 
+						. implode(TQUOT . ", " . TQUOT, array_keys($abook)) 
+						. TQUOT . ") VALUES ('" 
 						. implode("', '", array_values($abook)) 
 						. "')" );
 	
@@ -425,13 +429,13 @@ class Import extends \Zotlabs\Web\Controller {
 					unset($group['id']);
 					$group['uid'] = $channel['channel_id'];					
 					dbesc_array($group);
-					$r = dbq("INSERT INTO groups (`" 
-						. implode("`, `", array_keys($group)) 
-						. "`) VALUES ('" 
+					$r = dbq("INSERT INTO groups (" . TQUOT 
+						. implode(TQUOT . ", " . TQUOT, array_keys($group)) 
+						. TQUOT . ") VALUES ('" 
 						. implode("', '", array_values($group)) 
 						. "')" );
 				}
-				$r = q("select * from `groups` where uid = %d",
+				$r = q("select * from groups where uid = %d",
 					intval($channel['channel_id'])
 				);
 				if($r) {
@@ -452,9 +456,9 @@ class Import extends \Zotlabs\Web\Controller {
 							$group_member['gid'] = $x['new'];
 					}
 					dbesc_array($group_member);
-					$r = dbq("INSERT INTO group_member (`" 
-						. implode("`, `", array_keys($group_member)) 
-						. "`) VALUES ('" 
+					$r = dbq("INSERT INTO group_member (" . TQUOT 
+						. implode(TQUOT . ", " . TQUOT, array_keys($group_member)) 
+						. TQUOT . ") VALUES ('" 
 						. implode("', '", array_values($group_member)) 
 						. "')" );
 				}
