@@ -146,7 +146,7 @@ function localize_item(&$item){
 			case ACTIVITY_OBJ_NOTE:
 			default:
 				$post_type = t('status');
-				if($obj['mid'] != $obj['parent_mid'])
+				if($obj['id'] != $obj['parent'])
 					$post_type = t('comment');
 				break;
 		}
@@ -1536,7 +1536,11 @@ function network_tabs() {
 	// tabs
 	$tabs = array();
 
-	if(! get_config('system','disable_discover_tab')) {
+	$d = get_config('system','disable_discover_tab');
+	if($d === false)
+		$d = 1;
+
+	if(! $d) {
 		$tabs[] = array(
 			'label' => t('Discover'),
 			'url' => z_root() . '/' . $cmd . '?f=&fh=1' ,
