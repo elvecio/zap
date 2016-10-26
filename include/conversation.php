@@ -405,8 +405,6 @@ function count_descendants($item) {
 function visible_activity($item) {
 	$hidden_activities = [ ACTIVITY_LIKE, ACTIVITY_DISLIKE, ACTIVITY_AGREE, ACTIVITY_DISAGREE, ACTIVITY_ABSTAIN, ACTIVITY_ATTEND, ACTIVITY_ATTENDNO, ACTIVITY_ATTENDMAYBE ];
 
-	$post_types = [ ACTIVITY_OBJ_NOTE, ACTIVITY_OBJ_COMMENT, basename(ACTIVITY_OBJ_NOTE), basename(ACTIVITY_OBJ_COMMENT)]; 
-
 	if(intval($item['item_notshown']))
 		return false;
 
@@ -416,14 +414,32 @@ function visible_activity($item) {
 		}
 	}
 
+	if(is_edit_activity($item))
+		return false;
+
+	return true;
+}
+
+/**
+ * @brief Check if a given activity is an edit activity
+ * 
+ *
+ * @param array $item
+ * @return boolean
+ */
+
+function is_edit_activity($item) {
+
+	$post_types = [ ACTIVITY_OBJ_NOTE, ACTIVITY_OBJ_COMMENT, basename(ACTIVITY_OBJ_NOTE), basename(ACTIVITY_OBJ_COMMENT)]; 
+
 	// In order to share edits with networks which have no concept of editing, we'll create 
 	// separate activities to indicate the edit. Our network will not require them, since our
 	// edits are automatically applied and the activity indicated.  
 
 	if(($item['verb'] === ACTIVITY_UPDATE) && (in_array($item['obj_type'],$post_types)))
-		return false;
+		return true;
 
-	return true;
+	return false;
 }
 
 /**
@@ -1296,7 +1312,8 @@ function status_editor($a, $x, $popup = false) {
 		'$expiryModalOK' => t('OK'),
 		'$expiryModalCANCEL' => t('Cancel'),
 		'$expanded' => ((x($x, 'expanded')) ? $x['expanded'] : false),
-		'$bbcode' => ((x($x, 'bbcode')) ? $x['bbcode'] : false)
+		'$bbcode' => ((x($x, 'bbcode')) ? $x['bbcode'] : false),
+		'$parent' => ((array_key_exists('parent',$x) && $x['parent']) ? $x['parent'] : 0)
 	));
 
 	if ($popup === true) {

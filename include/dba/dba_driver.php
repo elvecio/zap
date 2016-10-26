@@ -53,7 +53,14 @@ class DBA {
 
 		}
 		else {
-			if(!($port))
+
+			// attempt to use the pdo driver compiled-in mysqli socket
+			// if using 'localhost' with no port configured.
+			// If this is wrong you'll need to set the socket path specifically
+			// using a server name of 'mysql:unix_socket=/socket/path', setting /socket/path
+			// as needed for your platform
+
+			if((!($port)) && ($server !== 'localhost'))
 				$port = 3306;
 		}
 
@@ -66,7 +73,7 @@ class DBA {
 				$dsn = $server;
 			}
 			else {
-				$dsn = self::$scheme . ':host=' . $server . (is_null($port) ? '' : ';port=' . $port);
+				$dsn = self::$scheme . ':host=' . $server . (intval($port) ? '' : ';port=' . $port);
 			}
 			$dsn .= ';dbname=' . $db;
 
@@ -175,8 +182,8 @@ abstract class dba_driver {
 			return false;
 		}
 
-		if(strlen($server) && ($server !== 'localhost') && ($server !== '127.0.0.1')) {
-			if((! dns_get_record($server, DNS_A + DNS_CNAME + DNS_PTR)) && (! filter_var($server, FILTER_VALIDATE_IP))) {
+		if(strlen($server) && ($server !== 'localhost') && ($server !== '127.0.0.1') && (! strpbrk($server,':;'))) {
+			if(! z_dns_check($server)) {
 				$this->error = sprintf( t('Cannot locate DNS info for database server \'%s\''), $server);
 				$this->connected = false;
 				$this->db = null;

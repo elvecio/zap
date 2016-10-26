@@ -15,7 +15,7 @@ class dba_pdo extends dba_driver {
 			$dsn = $server;
 		}
 		else {
-			$dsn = $this->driver_dbtype . ':host=' . $server . (is_null($port) ? '' : ';port=' . $port);
+			$dsn = $this->driver_dbtype . ':host=' . $server . (intval($port) ? '' : ';port=' . $port);
 		}
 		
 		$dsn .= ';dbname=' . $db;
@@ -54,7 +54,7 @@ class dba_pdo extends dba_driver {
 		$select = ((stripos($sql,'select') === 0) ? true : false);
 
 		try {
-			$result = $this->db->query($sql);
+			$result = $this->db->query($sql, PDO::FETCH_ASSOC);
 		}
 		catch(PDOException $e) {
 	
@@ -107,7 +107,7 @@ class dba_pdo extends dba_driver {
 			return 'string_agg(' . $fld . ',\'' . $sep . '\')';
 		}
 		else {
-			return 'GROUP_CONCAT(DISTINCT '.$fld.' SEPARATOR \''.$sep.'\')';
+			return 'GROUP_CONCAT(DISTINCT ' . $fld . ' SEPARATOR \'' . $sep . '\')';
 		}
 	}
 
@@ -120,9 +120,12 @@ class dba_pdo extends dba_driver {
 		}
 	}
 
+	// These two functions assume that postgres standard_conforming_strings is set to off;
+	// which we perform during DB open.
+
 	function escapebin($str) {
 		if($this->driver_dbtype === 'pgsql') {
-			return str_replace([ chr(92), chr(0), chr(39) ], [ '\\\134', '\\\000', '\\\047' ], $str);
+			return "\\\\x" . bin2hex($str);
 		}
 		else {
 			return $this->escape($str);
@@ -131,7 +134,15 @@ class dba_pdo extends dba_driver {
 	
 	function unescapebin($str) {
 		if($this->driver_dbtype === 'pgsql') {
-			return stripcslashes($str);
+			$x = '';
+			while(! feof($str)) {
+				$x .= fread($str,8192);
+			}
+			if(substr($x,0,2) === '\\x') {
+				$x = hex2bin(substr($x,2));
+			}
+			return $x;
+
 		}
 		else {
 			return $str;
