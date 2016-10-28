@@ -486,8 +486,13 @@ function z_dns_check($h,$check_mx = 0) {
 
 	// dns_get_record() has issues on some platforms
 	// so allow somebody to ignore it completely
+	// Use config values from memory as this can be called during setup
+	// before a database or even any config structure exists.
 
-	if(get_config('system','do_not_check_dns'))
+	if(is_array(\App::$config) && array_key_exists('system',\App::$config)
+		&& is_array(\App::$config['system'])
+		&& array_key_exists('do_not_check_dns',\App::$config['system']) 
+		&& \App::$config['system']['do_not_check_dns'])
 		return true;
 
 	$opts = DNS_A + DNS_CNAME + DNS_PTR;
@@ -1429,7 +1434,7 @@ function discover_by_webbie($webbie) {
 			dbesc($address)
 		);
 		if($r) {
-			$r = q("update xchan set xchan_name = '%s', xchan_network = '%s', xchan_name_date = '%s' where xchan_hash = '%s' limit 1",
+			$r = q("update xchan set xchan_name = '%s', xchan_network = '%s', xchan_name_date = '%s' where xchan_hash = '%s'",
 				dbesc($fullname),
 				dbesc($network),
 				dbesc(datetime_convert()),
