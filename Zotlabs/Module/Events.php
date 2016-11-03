@@ -57,9 +57,6 @@ class Events extends \Zotlabs\Web\Controller {
 			$start = sprintf('%d-%d-%d %d:%d:0',$startyear,$startmonth,$startday,$starthour,$startminute);
 		}
 	
-		if($nofinish) {
-			$finish = NULL_DATE;
-		}
 	
 		if($finish_text) {
 			$finish = $finish_text;
@@ -67,6 +64,11 @@ class Events extends \Zotlabs\Web\Controller {
 		else {
 			$finish = sprintf('%d-%d-%d %d:%d:0',$finishyear,$finishmonth,$finishday,$finishhour,$finishminute);
 		}
+
+		if($nofinish) {
+			$finish = NULL_DATE;
+		}
+
 	
 		if($adjust) {
 			$start = datetime_convert(date_default_timezone_get(),'UTC',$start);
@@ -208,7 +210,6 @@ class Events extends \Zotlabs\Web\Controller {
 		}
 	
 		$event = event_store_event($datarray);
-	
 	
 		if($post_tags)	
 			$datarray['term'] = $post_tags;
@@ -558,10 +559,10 @@ class Events extends \Zotlabs\Web\Controller {
 				// There's still an issue if the finish date crosses the end of month.
 				// Noting this for now - it will need to be fixed here and in Friendica.
 				// Ultimately the finish date shouldn't be involved in the query. 
-	
+
 				$r = q("SELECT event.*, item.plink, item.item_flags, item.author_xchan, item.owner_xchan
 	                              from event left join item on event_hash = resource_id 
-					where resource_type = 'event' and event.uid = %d $ignored 
+					where resource_type = 'event' and event.uid = %d and event.uid = item.uid $ignored 
 					AND (( adjust = 0 AND ( dtend >= '%s' or nofinish = 1 ) AND dtstart <= '%s' ) 
 					OR  (  adjust = 1 AND ( dtend >= '%s' or nofinish = 1 ) AND dtstart <= '%s' )) ",
 					intval(local_channel()),
@@ -570,7 +571,6 @@ class Events extends \Zotlabs\Web\Controller {
 					dbesc($adjust_start),
 					dbesc($adjust_finish)
 				);
-	
 			}
 	
 			$links = array();

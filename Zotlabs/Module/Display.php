@@ -121,6 +121,8 @@ class Display extends \Zotlabs\Web\Controller {
 			 	return '';
 			}
 		}
+		
+		$static = ((array_key_exists('static',$_REQUEST)) ? intval($_REQUEST['static']) : 0);
 	
 	
 		$simple_update = (($update) ? " AND item_unseen = 1 " : '');
@@ -130,10 +132,13 @@ class Display extends \Zotlabs\Web\Controller {
 		if($load)
 			$simple_update = '';
 	
-	
+		if($static && $simple_update)
+			$simple_update .= " and item_thread_top = 0 and author_xchan = '" . protect_sprintf(get_observer_hash()) . "' ";
 	
 		if((! $update) && (! $load)) {
 	
+
+			$static  = ((local_channel()) ? channel_manual_conv_update(local_channel()) : 0);
 	
 			$o .= '<div id="live-display"></div>' . "\r\n";
 			$o .= "<script> var profile_uid = " . ((intval(local_channel())) ? local_channel() : (-1))
@@ -154,6 +159,7 @@ class Display extends \Zotlabs\Web\Controller {
 				'$fh' => '0',
 				'$nouveau' => '0',
 				'$wall' => '0',
+				'$static' => $static,
 				'$page' => ((\App::$pager['page'] != 1) ? \App::$pager['page'] : 1),
 				'$list' => ((x($_REQUEST,'list')) ? intval($_REQUEST['list']) : 0),
 				'$search' => '',

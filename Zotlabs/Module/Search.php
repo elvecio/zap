@@ -53,6 +53,8 @@ class Search extends \Zotlabs\Web\Controller {
 			$tag = true;
 			$search = ((x($_GET,'tag')) ? trim(rawurldecode($_GET['tag'])) : '');
 		}
+
+		$static = ((array_key_exists('static',$_REQUEST)) ? intval($_REQUEST['static']) : 0);
 	
 		if((! local_channel()) || (! feature_enabled(local_channel(),'savedsearch')))
 			$o .= search($search,'search-box','/search',((local_channel()) ? true : false));
@@ -96,8 +98,12 @@ class Search extends \Zotlabs\Web\Controller {
 		// OR your own posts if you are a logged in member
 		// No items will be shown if the member has a blocked profile wall. 
 	
+
 		if((! $update) && (! $load)) {
 	
+			$static  = ((local_channel()) ? channel_manual_conv_update(local_channel()) : 0);
+
+
 			// This is ugly, but we can't pass the profile_uid through the session to the ajax updater,
 			// because browser prefetching might change it on us. We have to deliver it with the page.
 	
@@ -120,6 +126,7 @@ class Search extends \Zotlabs\Web\Controller {
 				'$fh' => '0',
 				'$nouveau' => '0',
 				'$wall' => '0',
+				'$static' => $static,
 				'$list' => ((x($_REQUEST,'list')) ? intval($_REQUEST['list']) : 0),
 				'$page' => ((\App::$pager['page'] != 1) ? \App::$pager['page'] : 1),
 				'$search' => (($tag) ? urlencode('#') : '') . $search,
