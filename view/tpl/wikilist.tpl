@@ -1,21 +1,15 @@
 <div id="wiki_list" class="widget">
-	<h3>{{$header}}</h3>
-	<ul class="nav nav-pills nav-stacked">
+		<h3>{{$header}}</h3>
+		<ul class="nav nav-pills nav-stacked">
+		{{if $wikis}}		
 		{{foreach $wikis as $wiki}}
-        <li class="dropdown" id="wiki-{{$wiki.resource_id}}">              
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                <b>{{$wiki.title}}</b><b class="fa fa-caret-down pull-right"></b>
-            </a>  
-            <ul class="dropdown-menu  pull-right">  
-              <li><a href="/wiki/{{$channel}}/{{$wiki.urlName}}/Home" title="View  {{$wiki.title}}">View</a></li>
-							<li><a href="#" onclick="wiki_download_wiki('{{$wiki.resource_id}}'); return false;" title="Download  {{$wiki.title}}">Download</a></li>
-              {{if $showControls}}
-              <li class="divider"></li>  
-              <li><a href="#" onclick="wiki_delete_wiki('{{$wiki.title}}','{{$wiki.resource_id}}'); return false;" title="Delete {{$wiki.title}}">Delete wiki</a></li>                                
-              {{/if}}
-            </ul>  
-        </li>  
+        <li>{{if $owner}}<a href="#" onclick="wiki_show_edit_wiki_form('{{$wiki.title}}', '{{$wiki.resource_id}}'); return false;" class="pull-right wikilist" title="{{$edit}}"><i class="fa fa-pencil"></i></a>{{/if}}
+			<a href="#" onclick="wiki_download_wiki('{{$wiki.resource_id}}'); return false;" title="{{$download}}" class="pull-right wikilist"><i class="fa fa-download"></i></a>
+			<a href="/wiki/{{$channel}}/{{$wiki.urlName}}/Home" title="{{$view}}">{{$wiki.title}}</a>
+        </li> 
 		{{/foreach}}
-	</ul>
+		{{/if}}
+		{{if $owner}}<li><a href="#" class="fakelink" onclick="wiki_show_new_wiki_form(); return false;"><i id="new-wiki-button" class="fa fa-plus-circle"></i>&nbsp;{{$addnew}}</a></li>{{/if}}
+		</ul>
 </div>
 

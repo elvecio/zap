@@ -581,11 +581,11 @@ function widget_settings_menu($arr) {
 	if($abk)
 		$abook_self_id = $abk[0]['abook_id'];
 
-	$hublocs = q("select count(*) as total from hubloc where hubloc_hash = '%s'",
+	$x = q("select count(*) as total from hubloc where hubloc_hash = '%s' and hubloc_deleted = 0 ",
 		dbesc($channel['channel_hash'])
 	);
 
-	$hublocs = (($hublocs[0]['total'] > 1) ? true : false);
+	$hublocs = (($x && $x[0]['total'] > 1) ? true : false);
 
 	$tabs = array(
 		array(
@@ -905,7 +905,7 @@ function widget_wiki_list($arr) {
 		// This should not occur because /wiki should redirect to /wiki/channel ...
 		$channel = \App::get_channel();
 	} else {
-		$channel = get_channel_by_nick(argv(1));	// Channel being viewed by observer
+		$channel = channelx_by_nick(argv(1));	// Channel being viewed by observer
 	}
 	if (!$channel) {
 		return '';
@@ -917,7 +917,11 @@ function widget_wiki_list($arr) {
 			'$channel' => $channel['channel_address'],
 			'$wikis' => $wikis['wikis'],
 			// If the observer is the local channel owner, show the wiki controls
-			'$showControls' => ((local_channel() === intval($channel['channel_id'])) ? true : false)
+			'$owner' => ((local_channel() && local_channel() === intval(\App::$profile['uid'])) ? true : false),
+			'$edit' => t('Edit'),
+			'$download' => t('Download'),
+			'$view' => t('View'),
+			'$addnew' => t('Add new wiki')
 		));
 	}
 	return '';
@@ -948,13 +952,17 @@ function widget_wiki_pages($arr) {
 			}
 		}
 	}
+	$can_create = perm_is_allowed(\App::$profile['uid'],get_observer_hash(),'write_pages');
+
 	return replace_macros(get_markup_template('wiki_page_list.tpl'), array(
 			'$hide' => $hide,
 			'$not_refresh' => $not_refresh,
 			'$header' => t('Wiki Pages'),
 			'$channel' => $channelname,
 			'$wikiname' => $wikiname,
-			'$pages' => $pages
+			'$pages' => $pages,
+			'$canadd' => $can_create,
+			'$addnew' => t('Add new page'),
 	));
 }
 

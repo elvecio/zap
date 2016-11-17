@@ -3,9 +3,21 @@ namespace Zotlabs\Module;
 
 require_once('include/api.php');
 
-
-
 class Api extends \Zotlabs\Web\Controller {
+
+
+	function init() {
+		zot_api_init();
+
+		api_register_func('api/client/register', 'api_client_register', false);
+		api_register_func('api/oauth/request_token', 'api_oauth_request_token', false);
+		api_register_func('api/oauth/access_token', 'api_oauth_access_token', false);
+
+		$args = [];
+		call_hooks('api_register',$args);
+
+		return;
+	}
 
 	function post() {
 		if(! local_channel()) {

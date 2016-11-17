@@ -4,6 +4,7 @@
  */
 
 require_once("include/bbcode.php");
+require_once('include/hubloc.php');
 
 // random string, there are 86 characters max in text mode, 128 for hex
 // output is urlsafe
@@ -836,14 +837,6 @@ function tag_sort_length($a,$b) {
 
 
 
-function strip_zids($s) {
-	return preg_replace('/[\?&]zid=(.*?)(&|$)/ism','$2',$s);
-}
-
-function strip_zats($s) {
-	return preg_replace('/[\?&]zat=(.*?)(&|$)/ism','$2',$s);
-}
-
 /**
  * @brief Quick and dirty quoted_printable encoding.
  *
@@ -1171,38 +1164,38 @@ function list_smilies() {
 	);
 
 	$icons = array(
-		'<img class="smiley" src="' . z_root() . '/images/smiley-heart.gif" alt="&lt;3" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-brokenheart.gif" alt="&lt;/3" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-brokenheart.gif" alt="&lt;\\3" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-smile.gif" alt=":-)" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-wink.gif" alt=";-)" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-frown.gif" alt=":-(" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-tongue-out.gif" alt=":-P" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-tongue-out.gif" alt=":-p" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-kiss.gif" alt=":-\"" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-kiss.gif" alt=":-\"" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-kiss.gif" alt=":-x" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-kiss.gif" alt=":-X" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-laughing.gif" alt=":-D" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-surprised.gif" alt="8-|" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-surprised.gif" alt="8-O" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-surprised.gif" alt=":-O" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-thumbsup.gif" alt="\\o/" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-Oo.gif" alt="o.O" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-Oo.gif" alt="O.o" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-Oo.gif" alt="o_O" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-Oo.gif" alt="O_o" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-cry.gif" alt=":\'(" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-foot-in-mouth.gif" alt=":-!" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-undecided.gif" alt=":-/" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-embarassed.gif" alt=":-[" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-cool.gif" alt="8-)" />',
-		'<img class="smiley" src="' . z_root() . '/images/beer_mug.gif" alt=":beer" />',
-		'<img class="smiley" src="' . z_root() . '/images/beer_mug.gif" alt=":homebrew" />',
-		'<img class="smiley" src="' . z_root() . '/images/coffee.gif" alt=":coffee" />',
-		'<img class="smiley" src="' . z_root() . '/images/smiley-facepalm.gif" alt=":facepalm" />',
-		'<img class="smiley" src="' . z_root() . '/images/like.gif" alt=":like" />',
-		'<img class="smiley" src="' . z_root() . '/images/dislike.gif" alt=":dislike" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-heart.gif" alt="&lt;3" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-brokenheart.gif" alt="&lt;/3" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-brokenheart.gif" alt="&lt;\\3" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-smile.gif" alt=":-)" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-wink.gif" alt=";-)" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-frown.gif" alt=":-(" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-tongue-out.gif" alt=":-P" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-tongue-out.gif" alt=":-p" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-kiss.gif" alt=":-\"" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-kiss.gif" alt=":-\"" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-kiss.gif" alt=":-x" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-kiss.gif" alt=":-X" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-laughing.gif" alt=":-D" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-surprised.gif" alt="8-|" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-surprised.gif" alt="8-O" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-surprised.gif" alt=":-O" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-thumbsup.gif" alt="\\o/" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-Oo.gif" alt="o.O" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-Oo.gif" alt="O.o" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-Oo.gif" alt="o_O" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-Oo.gif" alt="O_o" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-cry.gif" alt=":\'(" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-foot-in-mouth.gif" alt=":-!" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-undecided.gif" alt=":-/" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-embarassed.gif" alt=":-[" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-cool.gif" alt="8-)" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/beer_mug.gif" alt=":beer" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/beer_mug.gif" alt=":homebrew" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/coffee.gif" alt=":coffee" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-facepalm.gif" alt=":facepalm" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/like.gif" alt=":like" />',
+		'<img class="smiley" src="' . z_root() . '/images/emoticons/dislike.gif" alt=":dislike" />',
 		'<img class="smiley" src="' . z_root() . '/images/hz-16.png" alt=":hubzilla" />',
 
 	);
@@ -1296,7 +1289,7 @@ function preg_heart($x) {
 
 	$t = '';
 	for($cnt = 0; $cnt < strlen($x[1]); $cnt ++)
-		$t .= '<img class="smiley" src="' . z_root() . '/images/smiley-heart.gif" alt="&lt;3" />';
+		$t .= '<img class="smiley" src="' . z_root() . '/images/emoticons/smiley-heart.gif" alt="&lt;3" />';
 
 	$r =  str_replace($x[0],$t,$x[0]);
 
@@ -1697,43 +1690,6 @@ function create_export_photo_body(&$item) {
 			$item['sig'] = '';
 		}
 	}
-}
-
-/**
- * zidify_callback() and zidify_links() work together to turn any HTML a tags with class="zrl" into zid links
- * These will typically be generated by a bbcode '[zrl]' tag. This is done inside prepare_text() rather than bbcode()
- * because the latter is used for general purpose conversions and the former is used only when preparing text for
- * immediate display.
- *
- * Issues: Currently the order of HTML parameters in the text is somewhat rigid and inflexible.
- *    We assume it looks like \<a class="zrl" href="xxxxxxxxxx"\> and will not work if zrl and href appear in a different order.
- *
- * @param array $match
- * @return string
- */
-function zidify_callback($match) {
-	$is_zid = ((feature_enabled(local_channel(),'sendzid')) || (strpos($match[1],'zrl')) ? true : false);
-	$replace = '<a' . $match[1] . ' href="' . (($is_zid) ? zid($match[2]) : $match[2]) . '"';
-	$x = str_replace($match[0],$replace,$match[0]);
-
-	return $x;
-}
-
-function zidify_img_callback($match) {
-	$is_zid = ((feature_enabled(local_channel(),'sendzid')) || (strpos($match[1],'zrl')) ? true : false);
-	$replace = '<img' . $match[1] . ' src="' . (($is_zid) ? zid($match[2]) : $match[2]) . '"';
-
-	$x = str_replace($match[0],$replace,$match[0]);
-
-	return $x;
-}
-
-
-function zidify_links($s) {
-	$s = preg_replace_callback('/\<a(.*?)href\=\"(.*?)\"/ism','zidify_callback',$s);
-	$s = preg_replace_callback('/\<img(.*?)src\=\"(.*?)\"/ism','zidify_img_callback',$s);
-
-	return $s;
 }
 
 /**

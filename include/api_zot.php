@@ -1,26 +1,61 @@
 <?php
 
+	function zot_api_init() {
+		api_register_func('api/export/basic','api_export_basic', true);
+		api_register_func('api/red/channel/export/basic','api_export_basic', true);
+		api_register_func('api/z/1.0/channel/export/basic','api_export_basic', true);
+		api_register_func('api/red/channel/stream','api_channel_stream', true);
+		api_register_func('api/z/1.0/channel/stream','api_channel_stream', true);
+		api_register_func('api/red/files','api_attach_list', true);
+		api_register_func('api/z/1.0/files','api_attach_list', true);
+		api_register_func('api/red/filemeta', 'api_file_meta', true);
+		api_register_func('api/z/1.0/filemeta', 'api_file_meta', true);
+		api_register_func('api/red/filedata', 'api_file_data', true);
+		api_register_func('api/z/1.0/filedata', 'api_file_data', true);
+		api_register_func('api/red/file/export', 'api_file_export', true);
+		api_register_func('api/z/1.0/file/export', 'api_file_export', true);
+		api_register_func('api/red/file', 'api_file_detail', true);
+		api_register_func('api/z/1.0/file', 'api_file_detail', true);
+		api_register_func('api/red/albums','api_albums', true);
+		api_register_func('api/z/1.0/albums','api_albums', true);
+		api_register_func('api/red/photos','api_photos', true);
+		api_register_func('api/z/1.0/photos','api_photos', true);
+		api_register_func('api/red/photo', 'api_photo_detail', true);
+		api_register_func('api/z/1.0/photo', 'api_photo_detail', true);
+		api_register_func('api/red/group_members','api_group_members', true);
+		api_register_func('api/z/1.0/group_members','api_group_members', true);
+		api_register_func('api/red/group','api_group', true);
+		api_register_func('api/z/1.0/group','api_group', true);
+		api_register_func('api/red/xchan','api_red_xchan',true);
+		api_register_func('api/z/1.0/xchan','api_red_xchan',true);
+		api_register_func('api/red/item/new','red_item_new', true);
+		api_register_func('api/z/1.0/item/new','red_item_new', true);
+		api_register_func('api/red/item/full','red_item', true);
+		api_register_func('api/z/1.0/item/full','red_item', true);
+
+		api_register_func('api/z/1.0/abook','api_zot_abook_xchan',true);
+		api_register_func('api/z/1.0/abconfig','api_zot_abconfig',true);
+		api_register_func('api/z/1.0/perm_allowed','api_zot_perm_allowed',true);
+
+		return;
+	}
+
 
 	/*
 	 * Red basic channel export
 	 */
 
-	function api_export_basic( $type) {
+	function api_export_basic($type) {
 		if(api_user() === false) {
 			logger('api_export_basic: no user');
 			return false;
 		}
-
-		require_once('include/channel.php');
 		
 		json_return_and_die(identity_basic_export(api_user(),(($_REQUEST['posts']) ? intval($_REQUEST['posts']) : 0 )));	
 	}
-	api_register_func('api/export/basic','api_export_basic', true);
-	api_register_func('api/red/channel/export/basic','api_export_basic', true);
-	api_register_func('api/z/1.0/channel/export/basic','api_export_basic', true);
 
 
-	function api_channel_stream( $type) {
+	function api_channel_stream($type) {
 		if(api_user() === false) {
 			logger('api_channel_stream: no user');
 			return false;
@@ -34,15 +69,11 @@
 
 		}
 	}
-	api_register_func('api/red/channel/stream','api_channel_stream', true);
-	api_register_func('api/z/1.0/channel/stream','api_channel_stream', true);
 
 	function api_attach_list($type) {
 		logger('api_user: ' . api_user());
 		json_return_and_die(attach_list_files(api_user(),get_observer_hash(),'','','','created asc'));
 	}
-	api_register_func('api/red/files','api_attach_list', true);
-	api_register_func('api/z/1.0/files','api_attach_list', true);
 
 
 	function api_file_meta($type) {
@@ -60,8 +91,6 @@
 		killme();
 	}
 
-	api_register_func('api/red/filemeta', 'api_file_meta', true);
-	api_register_func('api/z/1.0/filemeta', 'api_file_meta', true);
 
 
 	function api_file_data($type) {
@@ -104,8 +133,6 @@
 		killme();
 	}
 
-	api_register_func('api/red/filedata', 'api_file_data', true);
-	api_register_func('api/z/1.0/filedata', 'api_file_data', true);
 
 	function api_file_export($type) {
 		if (api_user()===false) return false;
@@ -118,8 +145,6 @@
 		killme();
 	}
 
-	api_register_func('api/red/file/export', 'api_file_export', true);
-	api_register_func('api/z/1.0/file/export', 'api_file_export', true);
 
 	function api_file_detail($type) {
 		if (api_user()===false) return false;
@@ -142,22 +167,16 @@
 		killme();
 	}
 
-	api_register_func('api/red/file', 'api_file_detail', true);
-	api_register_func('api/z/1.0/file', 'api_file_detail', true);
 
 
 	function api_albums($type) {
 		json_return_and_die(photos_albums_list(App::get_channel(),App::get_observer()));
 	}
-	api_register_func('api/red/albums','api_albums', true);
-	api_register_func('api/z/1.0/albums','api_albums', true);
 
 	function api_photos($type) {
 		$album = $_REQUEST['album'];
 		json_return_and_die(photos_list_photos(App::get_channel(),App::get_observer(),$album));
 	}
-	api_register_func('api/red/photos','api_photos', true);
-	api_register_func('api/z/1.0/photos','api_photos', true);
 
 	function api_photo_detail($type) {
 		if (api_user()===false) return false;
@@ -198,34 +217,34 @@
 		killme();
 	}
 
-	api_register_func('api/red/photo', 'api_photo_detail', true);
-	api_register_func('api/z/1.0/photo', 'api_photo_detail', true);
-
-
 	function api_group_members($type) {
 		if(api_user() === false)
 			return false;
+
+		$r = null;
 
 		if($_REQUEST['group_id']) {
 			$r = q("select * from groups where uid = %d and id = %d limit 1",
 				intval(api_user()),
 				intval($_REQUEST['group_id'])
 			);
-			if($r) {
-				$x = q("select * from group_member left join xchan on group_member.xchan = xchan.xchan_hash 
-					left join abook on abook_xchan = xchan_hash where gid = %d",
-					intval($_REQUEST['group_id'])
-				);
-				json_return_and_die($x);
-			}
 		}
+		elseif($_REQUEST['group_name']) {
+			$r = q("select * from groups where uid = %d and gname = '%s' limit 1",
+				intval(api_user()),
+				dbesc($_REQUEST['group_name'])
+			);
+		}
+
+		if($r) {
+			$x = q("select * from group_member left join xchan on group_member.xchan = xchan.xchan_hash 
+				left join abook on abook_xchan = xchan_hash where gid = %d",
+				intval($r[0]['id'])
+			);
+			json_return_and_die($x);
+		}
+
 	}
-
-	api_register_func('api/red/group_members','api_group_members', true);
-	api_register_func('api/z/1.0/group_members','api_group_members', true);
-
-
-
 
 	function api_group($type) {
 		if(api_user() === false)
@@ -236,8 +255,6 @@
 		);
 		json_return_and_die($r);
 	}
-	api_register_func('api/red/group','api_group', true);
-	api_register_func('api/z/1.0/group','api_group', true);
 
 
 	function api_red_xchan($type) {
@@ -255,12 +272,76 @@
 		json_return_and_die($r);
 	};
 
-	api_register_func('api/red/xchan','api_red_xchan',true);
-	api_register_func('api/z/1.0/xchan','api_red_xchan',true);
-	
+	function api_zot_abook_xchan($type) {
+		logger('api_abook_xchan');
 
+		if(api_user() === false)
+			return false;
 
-	function red_item_new( $type) {
+		$sql_extra = ((array_key_exists('abook_id',$_REQUEST) && intval($_REQUEST['abook_id'])) ? ' and abook_id = ' . intval($_REQUEST['abook_id']) . ' ' : '');
+		if($_SERVER['REQUEST_METHOD'] === 'POST') {
+			// update
+		}
+		$r = q("select * from abook left join xchan on abook_xchan = xchan_hash where abook_channel = %d $sql_extra ",
+			intval(api_user())
+		);
+
+		json_return_and_die($r);
+	};
+
+	function api_zot_abconfig($type) {
+
+		if(api_user() === false)
+			return false;
+
+		$sql_extra = ((array_key_exists('abook_id',$_REQUEST) && intval($_REQUEST['abook_id'])) ? ' and abook_id = ' . intval($_REQUEST['abook_id']) . ' ' : '');
+		if($_SERVER['REQUEST_METHOD'] === 'POST') {
+			// update
+		}
+		$r = q("select abconfig.* from abconfig left join abook on abook_xchan = abconfig.xchan and abook_channel = abconfig.chan where abconfig.chan = %d $sql_extra ",
+			intval(api_user())
+		);
+
+		json_return_and_die($r);
+
+	}
+
+	function api_zot_perm_allowed($type) {
+		if(api_user() === false)
+			return false;
+
+		$perm = ((array_key_exists('perm',$_REQUEST)) ? $_REQUEST['perm'] : '');
+
+		if(array_key_exists('abook_id',$_REQUEST) && intval($_REQUEST['abook_id'])) {
+			$r = q("select abook_xchan as hash from abook where abook_id = %d and abook_channel = %d limit 1",
+				intval($_REQUEST['abook_id']),
+				intval(api_user())
+			);
+		}
+		else {
+			$r = xchan_fetch($_REQUEST);
+		}
+
+		$x = false;
+
+		if($r) {
+			if($perm)
+				$x = [ [ 'perm' => $perm, 'allowed' => perm_is_allowed(api_user(), $r[0]['hash'], $perm)] ];
+			else {
+				$x = [];
+				$p = get_all_perms(api_user(),$r[0]['hash']);
+				if($p) {
+					foreach($p as $k => $v)
+						$x[] = [ 'perm' => $k, 'allowed' => $v ];
+				}
+			}
+		}
+		
+		json_return_and_die($x);
+
+	}
+
+	function red_item_new($type) {
 
 		if (api_user() === false) {
 			logger('api_red_item_new: no user');
@@ -291,11 +372,9 @@
 		json_return_and_die($x);
 	}
 
-	api_register_func('api/red/item/new','red_item_new', true);
-	api_register_func('api/z/1.0/item/new','red_item_new', true);
 
 
-	function red_item( $type) {
+	function red_item($type) {
 
 		if (api_user() === false) {
 			logger('api_red_item_full: no user');
@@ -330,7 +409,5 @@
 		json_return_and_die($ret);
 	}
 
-	api_register_func('api/red/item/full','red_item', true);
-	api_register_func('api/z/1.0/item/full','red_item', true);
 
 

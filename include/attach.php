@@ -1581,7 +1581,7 @@ function file_activity($channel_id, $object, $allow_cid, $allow_gid, $deny_cid, 
 	$arr['author_xchan']  = $poster['xchan_hash'];
 	$arr['owner_xchan']   = $poster['xchan_hash'];
 	$arr['title']         = '';
-	$arr['item_hidden']   = 1;
+	$arr['item_notshown'] = 1;
 	$arr['obj_type']      = $objtype;
 	$arr['resource_id']   = $object['hash'];
 	$arr['resource_type'] = 'attach';
@@ -2143,6 +2143,10 @@ function attach_move($channel_id, $resource_id, $new_folder_hash) {
 				$basename = $filename;
 				$ext = '';
 			}
+
+			$matches = false;
+			if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+				$basename = $matches[1];
 
 			$v = q("select filename from attach where ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
 				dbesc($basename . $ext),

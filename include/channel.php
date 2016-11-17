@@ -162,7 +162,7 @@ function channel_total() {
  * Also creates the related xchan, hubloc, profile, and "self" abook records,
  * and an empty "Friends" group/collection for the new channel.
  *
- * @param array $arr assoziative array with:
+ * @param array $arr associative array with:
  *  * \e string \b name full name of channel
  *  * \e string \b nickname "email/url-compliant" nickname
  *  * \e int \b account_id to attach with this channel
@@ -521,7 +521,7 @@ function identity_basic_export($channel_id, $items = false) {
 		$ret['abook'] = $r;
 
 		for($x = 0; $x < count($ret['abook']); $x ++) {
-			$xchans[] = $ret['abook'][$x]['abook_chan'];
+			$xchans[] = $ret['abook'][$x]['abook_xchan'];
 			$abconfig = load_abconfig($channel_id,$ret['abook'][$x]['abook_xchan']);
 			if($abconfig)
 				$ret['abook'][$x]['abconfig'] = $abconfig;
@@ -1371,60 +1371,6 @@ function zat_init() {
 
 
 
-/**
- * @brief Adds a zid parameter to a url.
- *
- * @param string $s
- *   The url to accept the zid
- * @param boolean $address
- *   $address to use instead of session environment
- * @return string
- *
- * @hooks 'zid'
- *      string url - url to accept zid
- *      string zid - urlencoded zid
- *      string result - the return string we calculated, change it if you want to return something else
- */
-function zid($s,$address = '') {
-	if (! strlen($s) || strpos($s,'zid='))
-		return $s;
-
-	$m = parse_url($s);
-	$fragment = ((array_key_exists('fragment',$m) && $m['fragment']) ? $m['fragment'] : false);
-	if($fragment !== false)
-		$s = str_replace('#' . $fragment,'',$s);
-
-	$has_params = ((strpos($s,'?')) ? true : false);
-	$num_slashes = substr_count($s, '/');
-	if (! $has_params)
-		$has_params = ((strpos($s, '&')) ? true : false);
-
-	$achar = strpos($s,'?') ? '&' : '?';
-
-	$mine = get_my_url();
-	$myaddr = (($address) ? $address : get_my_address());
-
-	/**
-	 * @FIXME checking against our own channel url is no longer reliable. We may have a lot
-	 * of urls attached to out channel. Should probably match against our site, since we
-	 * will not need to remote authenticate on our own site anyway.
-	 */
-
-	if ($mine && $myaddr && (! link_compare($mine,$s)))
-		$zurl = $s . (($num_slashes >= 3) ? '' : '/') . $achar . 'zid=' . urlencode($myaddr);
-	else
-		$zurl = $s;
-
-	// put fragment at the end
-
-	if($fragment)
-		$zurl .= '#' . $fragment;
-
-	$arr = array('url' => $s, 'zid' => urlencode($myaddr), 'result' => $zurl);
-	call_hooks('zid', $arr);
-
-	return $arr['result'];
-}
 
 // Used from within PCSS themes to set theme parameters. If there's a
 // puid request variable, that is the "page owner" and normally their theme
@@ -1532,25 +1478,18 @@ function remote_online_status($webbie) {
 }
 
 
-function get_channel_by_nick($nick) {
-	$r = q("select * from channel where channel_address = '%s' limit 1",
-		dbesc($nick)
-	);
-	return(($r) ? $r[0] : false);
-
-}
-
 /**
  * @brief
  *
  * @return string
  */
+
 function identity_selector() {
-	if (local_channel()) {
+	if(local_channel()) {
 		$r = q("select channel.*, xchan.* from channel left join xchan on channel.channel_hash = xchan.xchan_hash where channel.channel_account_id = %d and channel_removed = 0 order by channel_name ",
 			intval(get_account_id())
 		);
-		if (count($r) > 1) {
+		if($r && count($r) > 1) {
 			//$account = App::get_account();
 			$o = replace_macros(get_markup_template('channel_id_select.tpl'), array(
 				'$channels' => $r,
