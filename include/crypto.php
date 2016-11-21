@@ -48,20 +48,73 @@ function pkcs5_unpad($text)
 function AES256CBC_encrypt($data,$key,$iv) {
 
 	return openssl_encrypt($data,'aes-256-cbc',str_pad($key,32,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
-
 }
 
 function AES256CBC_decrypt($data,$key,$iv) {
 
 	return openssl_decrypt($data,'aes-256-cbc',str_pad($key,32,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
+}
 
+function AES128CBC_encrypt($data,$key,$iv) {
+	$key = substr($key,0,16);
+	return openssl_encrypt($data,'aes-128-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
+}
+
+function AES128CBC_decrypt($data,$key,$iv) {
+	$key = substr($key,0,16);
+	return openssl_decrypt($data,'aes-128-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
+}
+
+function CAST5CBC_encrypt($data,$key,$iv) {
+	$key = substr($key,0,16);
+	$iv = substr($iv,0,8);
+	return openssl_encrypt($data,'cast5-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,8,"\0"));
+}
+
+function CAST5CBC_decrypt($data,$key,$iv) {
+	$key = substr($key,0,16);
+	$iv = substr($iv,0,8);
+	return openssl_decrypt($data,'cast5-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,8,"\0"));
 }
 
 function crypto_encapsulate($data,$pubkey,$alg='aes256cbc') {
+	$fn = strtoupper($alg) . '_encrypt';
+	
 	if($alg === 'aes256cbc')
 		return aes_encapsulate($data,$pubkey);
 
+	return other_encapsulate($data,$pubkey,$alg);
+
 }
+
+function other_encapsulate($data,$pubkey,$alg) {
+	if(! $pubkey)
+		logger('no key. data: ' . $data);
+
+	$fn = strtoupper($alg) . '_encrypt';
+	if(function_exists($fn)) {
+		$key = random_string(32,RANDOM_STRING_TEXT);
+		$iv  = random_string(16,RANDOM_STRING_TEXT);
+		$result['data'] = base64url_encode($fn($data,$key,$iv),true);
+		// log the offending call so we can track it down
+		if(! openssl_public_encrypt($key,$k,$pubkey)) {
+			$x = debug_backtrace();
+			logger('RSA failed. ' . print_r($x[0],true));
+		}
+
+		$result['alg'] = $alg;
+	 	$result['key'] = base64url_encode($k,true);
+		openssl_public_encrypt($iv,$i,$pubkey);
+		$result['iv'] = base64url_encode($i,true);
+		return $result;
+	}
+	else {
+		$x = [ 'data' => $data, 'pubkey' => $pubkey, 'alg' => $alg, 'result' => $data ];
+		call_hooks('other_encapsulate', $x);
+		return $x['result'];
+	}
+}
+
 
 
 function aes_encapsulate($data,$pubkey) {
@@ -89,6 +142,22 @@ function crypto_unencapsulate($data,$prvkey) {
 	if($alg === 'aes256cbc')
 		return aes_unencapsulate($data,$prvkey);
 
+	return other_unencapsulate($data,$prvkey,$alg);
+
+}
+
+function other_unencapsulate($data,$prvkey,$alg) {
+	$fn = strtoupper($alg) . '_decrypt';
+	if(function_exists($fn)) {
+		openssl_private_decrypt(base64url_decode($data['key']),$k,$prvkey);
+		openssl_private_decrypt(base64url_decode($data['iv']),$i,$prvkey);
+		return $fn(base64url_decode($data['data']),$k,$i);
+	}
+	else {
+		$x = [ 'data' => $data, 'prvkey' => $prvkey, 'alg' => $alg, 'result' => $data ];
+		call_hooks('other_unencapsulate',$x);
+		return $x['result'];
+	}
 }
 
 

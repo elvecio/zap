@@ -49,7 +49,7 @@ require_once('include/zid.php');
 
 define ( 'PLATFORM_NAME',           'zap' );
 define ( 'STD_VERSION',             '1.15' );
-define ( 'ZOT_REVISION',            '1.1' );
+define ( 'ZOT_REVISION',            '1.2' );
 
 define ( 'DB_UPDATE_VERSION',       1184  );
 
