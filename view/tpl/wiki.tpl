@@ -11,7 +11,12 @@
     transition: opacity 0.5s 0.5s ease;
   }
 </style>
-<div class="generic-content-wrapper">
+{{if $hideEditor}}
+<div>
+	<p class="lead text-center">{{$chooseWikiMessage}}</p>
+</div>
+{{/if}}
+<div class="generic-content-wrapper" {{if $hideEditor}}style="display: none;"{{/if}}>
   <div class="section-title-wrapper">
 			
     <div class="pull-right">
@@ -40,61 +45,13 @@
       <button id="fullscreen-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen();"><i class="fa fa-expand"></i></button>
       <button id="inline-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen(false);"><i class="fa fa-compress"></i></button>
     </div>
-    <h2><span id="wiki-header-name">{{$wikiheaderName}}</span>: <span id="wiki-header-page">{{$wikiheaderPage}}</span></h2>
+	  <h2><span id="wiki-header-name"><i class="fa fa-book"></i>&nbsp<b>{{$wikiheaderName}}</b></span>&nbsp:&nbsp
+		  <span id="wiki-header-page">{{$wikiheaderPage}}</span>
+		</h2>
     <div class="clear"></div>
   </div>
-	<div id="new-wiki-form-wrapper" class="section-content-tools-wrapper" style="display:none;">
-      <form id="new-wiki-form" action="wiki/{{$channel}}/create/wiki" method="post" class="acl-form" data-form_id="new-wiki-form" data-allow_cid='{{$allow_cid}}' data-allow_gid='{{$allow_gid}}' data-deny_cid='{{$deny_cid}}' data-deny_gid='{{$deny_gid}}'>
-        <div class="clear"></div>
-        {{include file="field_input.tpl" field=$wikiName}}
-        
-        <div id="post-visible-container" class="form-group field checkbox"> 
-          <span style="font-size:1.2em;" class="pull-left">Send notification post?</span>                            
-          <div style="margin-left:20px" class="pull-left">
-              <input name="postVisible" id="postVisible" value="0" type="checkbox">
-              <label class="switchlabel" for="postVisible"> 
-                  <span class="onoffswitch-inner" data-on="Post" data-off="None"></span>
-                  <span class="onoffswitch-switch"></span>
-              </label>
-          </div>
-        </div>
-        
-        <div class="btn-group pull-right">
-            <div id="profile-jot-submit-right" class="btn-group">
-                <button id="dbtn-acl" class="btn btn-default btn-sm" data-toggle="modal" data-target="#aclModal" title="Permission settings" onclick="return false;">
-                    <i id="jot-perms-icon" class="fa fa-{{$lockstate}} jot-icons"></i>{{$bang}}
-                </button>
-                <button id="new-wiki-submit" class="btn btn-primary" type="submit" name="submit" >Create Wiki</button>
-            </div>
-        </div>
-      </form>        
-     {{$acl}}
-     <div class="clear"></div>
-     <hr>
-    </div>
   
-	<div id="edit-wiki-form-wrapper" class="section-content-tools-wrapper" style="display:none;">
-      <form id="edit-wiki-form" action="wiki/edit/wiki" method="post" >
-        <div class="clear"></div>
-        
-        <div class="btn-group pull-right">
-            <!--<button id="edit-wiki-submit" class="btn btn-success" type="submit" name="submit" >Edit Wiki</button>-->
-						<button class="btn btn-md btn-danger" onclick="wiki_delete_wiki(window.wiki_title, window.wiki_resource_id); return false;"><i class="fa fa-trash-o"></i>&nbsp;Delete Wiki</button>
-        </div>
-      </form>        <div class="clear"></div>
-      <hr>
-    </div>
 		
-	<div id="new-page-form-wrapper" class="section-content-tools-wrapper" style="display:none;">
-      <form id="new-page-form" action="wiki/create/page" method="post" >
-        <div class="clear"></div>
-        {{include file="field_input.tpl" field=$pageName}}
-        <div class="btn-group pull-right">
-            <button id="new-page-submit" class="btn btn-success" type="submit" name="submit" >Create Page</button>
-        </div>
-      </form>        <div class="clear"></div>
-      <hr>
-    </div>
   
     <div id="rename-page-form-wrapper" class="section-content-tools-wrapper" style="display:none;">
       <form id="rename-page-form" action="wiki/rename/page" method="post" >
@@ -108,17 +65,34 @@
     </div>
 
   <div id="wiki-content-container" class="section-content-wrapper" {{if $hideEditor}}style="display: none;"{{/if}}>
+	   	
     <ul class="nav nav-tabs" id="wiki-nav-tabs">
-      <li id="edit-pane-tab"><a data-toggle="tab" href="#edit-pane">Edit</a></li>
-      <li class="active"><a data-toggle="tab" href="#preview-pane" id="wiki-get-preview">Preview</a></li>
+      <li id="edit-pane-tab"><a data-toggle="tab" href="#edit-pane">{{$editOrSourceLabel}}</a></li>
+      <li class="active"><a data-toggle="tab" href="#preview-pane" id="wiki-get-preview">View</a></li>
       <li {{if $hidePageHistory}}style="display: none;"{{/if}}><a data-toggle="tab" href="#page-history-pane" id="wiki-get-history">History</a></li>
-
+	
     </ul>
-					
+				
 			<div class="tab-content" id="wiki-page-tabs">
 
       <div id="edit-pane" class="tab-pane fade">
         <div id="ace-editor"></div>
+		{{if $showCommitMsg}}
+		  {{if $showPageControls}}
+		<div class="section-content-wrapper">
+				  <div id="id_{{$commitMsg.0}}_wrapper" class='form-group field input'>
+			  <label for='id_{{$commitMsg.0}}' id='label_{{$commitMsg.0}}'>{{$commitMsg.1}}{{if $commitMsg.4}}<span class="required"> {{$commitMsg.4}}</span>{{/if}}</label>
+			  <span>
+					  <input class="" style="width: 80%;" name='{{$commitMsg.0}}' id='id_{{$commitMsg.0}}' type="text" value="{{$commitMsg.2}}"{{if $commitMsg.5}} {{$commitMsg.5}}{{/if}}>
+					  <a id="save-page" href="#" class="btn btn-primary btn-md">Save</a>
+			  </span>
+			  <span id='help_{{$commitMsg.0}}' class='help-block'>{{$commitMsg.3}}</span>
+
+			  <div class="clear"></div>
+		  </div>
+		</div>
+		{{/if}}
+		{{/if}}
       </div>      
       <div id="preview-pane" class="tab-pane fade in active">
         <div id="wiki-preview" class="section-content-wrapper">
@@ -128,27 +102,13 @@
       <div id="page-history-pane" class="tab-pane fade" {{if $hidePageHistory}}style="display: none;"{{/if}}>
         <div id="page-history-list" class="section-content-wrapper">
         </div>
-      </div>     
+      </div>    
+	
+      </div>  
 
 
     </div>
   </div>
-  {{if $showCommitMsg}}
-	{{if $showPageControls}}
-  <div class="section-content-wrapper">
-			<div id="id_{{$commitMsg.0}}_wrapper" class='form-group field input'>
-		<label for='id_{{$commitMsg.0}}' id='label_{{$commitMsg.0}}'>{{$commitMsg.1}}{{if $commitMsg.4}}<span class="required"> {{$commitMsg.4}}</span>{{/if}}</label>
-		<span>
-				<input class="" style="width: 80%;" name='{{$commitMsg.0}}' id='id_{{$commitMsg.0}}' type="text" value="{{$commitMsg.2}}"{{if $commitMsg.5}} {{$commitMsg.5}}{{/if}}>
-				<a id="save-page" href="#" class="btn btn-primary btn-md">Save</a>
-		</span>
-		<span id='help_{{$commitMsg.0}}' class='help-block'>{{$commitMsg.3}}</span>
-		
-		<div class="clear"></div>
-	</div>
-  </div>
-  {{/if}}
-  {{/if}}
 </div>
 
 {{$wikiModal}}
@@ -218,14 +178,25 @@
 		});
 
 		var editor = ace.edit("ace-editor");
-		editor.setTheme("ace/theme/github");
-		editor.setShowPrintMargin(false);
-		editor.getSession().setUseWrapMode('free');
-		editor.getSession().setMode("ace/mode/markdown");
+		editor.setOptions({
+			theme: "ace/theme/github",
+			mode: "ace/mode/markdown",
+
+			wrap: true,
+
+			minLines: 30,
+			maxLines: Infinity,
+
+			printMargin: false
+		});
+
 		editor.getSession().setValue(window.wiki_page_content);
-			window.editor = editor; // Store the editor in the window object so the anonymous function can use it.
-			$('#edit-pane-tab').click(function (ev) {
-					setTimeout(function() {window.editor.focus();}, 500); // Return the focus to the editor allowing immediate text entry
+		window.editor = editor; // Store the editor in the window object so the anonymous function can use it.
+		{{if !$showPageControls}}
+			editor.setReadOnly(true); // Disable editing if the viewer lacks edit permission
+		{{/if}}
+		$('#edit-pane-tab').click(function (ev) {
+			setTimeout(function() {window.editor.focus();}, 500); // Return the focus to the editor allowing immediate text entry
 		});
 
 		$('#wiki-get-preview').click(function (ev) {
@@ -271,23 +242,6 @@
 		function wiki_download_wiki(resource_id) {
 				window.location = "wiki/{{$channel}}/download/wiki/" + resource_id;
 		}
-
-		$('#new-page-submit').click(function (ev) {
-			if (window.wiki_resource_id === '') {
-			window.console.log('You must have a wiki open in order to create pages.');
-			ev.preventDefault();
-			return false;
-			}
-			$.post("wiki/{{$channel}}/create/page", {name: $('#id_pageName').val(), resource_id: window.wiki_resource_id}, 
-			function (data) {
-				if (data.success) {
-				window.location = data.url;
-				} else {
-				window.console.log('Error creating page.');
-				}
-			}, 'json');
-			ev.preventDefault();
-		});
 
 		function wiki_refresh_page_list() {
 			if (window.wiki_resource_id === '') {
@@ -513,6 +467,7 @@
 		};
 
 		function wiki_show_new_wiki_form() {
+			$('div[id^=\'edit-wiki-form-wrapper\']').hide();
 			$('#new-page-form-wrapper').hide(); 
 			$('#edit-wiki-form-wrapper').hide();
 			$('#new-wiki-form-wrapper').toggle(); 
@@ -520,6 +475,7 @@
 		}
 
 		function wiki_show_new_page_form() {
+			$('div[id^=\'edit-wiki-form-wrapper\']').hide();
 			$('#edit-wiki-form-wrapper').hide();
 			$('#new-wiki-form-wrapper').hide();
 			$('#new-page-form-wrapper').toggle(); 
@@ -529,6 +485,7 @@
 		function wiki_show_edit_wiki_form(wiki_title, wiki_resource_id) {
 			window.wiki_resource_id = wiki_resource_id;
 			window.wiki_title = wiki_title;
+			$('div[id^=\'edit-wiki-form-wrapper\']').hide();
 			$('#new-page-form-wrapper').hide();
 			$('#new-wiki-form-wrapper').hide();
 			$('#edit-wiki-form-wrapper').toggle();  
@@ -545,5 +502,6 @@
 				{{else}}
 						$('#new-wiki-button').hide();
 				{{/if}}
+				
 		});
 </script>
