@@ -93,8 +93,8 @@ function other_encapsulate($data,$pubkey,$alg) {
 
 	$fn = strtoupper($alg) . '_encrypt';
 	if(function_exists($fn)) {
-		$key = random_string(32,RANDOM_STRING_TEXT);
-		$iv  = random_string(16,RANDOM_STRING_TEXT);
+		$key = openssl_random_pseudo_bytes(32);
+		$iv  = openssl_random_pseudo_bytes(16);
 		$result['data'] = base64url_encode($fn($data,$key,$iv),true);
 		// log the offending call so we can track it down
 		if(! openssl_public_encrypt($key,$k,$pubkey)) {
@@ -117,7 +117,7 @@ function other_encapsulate($data,$pubkey,$alg) {
 
 function crypto_methods() {
 
-	$r = [ 'aes128cbc', 'cast5cbc', 'aes256cbc' ];
+	$r = [ 'aes256cbc', 'aes128cbc', 'cast5cbc' ];
 	call_hooks('crypto_methods',$r);
 	return $r;
 
@@ -127,8 +127,8 @@ function crypto_methods() {
 function aes_encapsulate($data,$pubkey) {
 	if(! $pubkey)
 		logger('aes_encapsulate: no key. data: ' . $data);
-	$key = random_string(32,RANDOM_STRING_TEXT);
-	$iv  = random_string(16,RANDOM_STRING_TEXT);
+	$key = openssl_random_pseudo_bytes(32);
+	$iv  = openssl_random_pseudo_bytes(16);
 	$result['data'] = base64url_encode(AES256CBC_encrypt($data,$key,$iv),true);
 	// log the offending call so we can track it down
 	if(! openssl_public_encrypt($key,$k,$pubkey)) {
