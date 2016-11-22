@@ -1162,6 +1162,11 @@ function zot_import($arr, $sender_url) {
 		$data = json_decode(crypto_unencapsulate($data,get_config('system','prvkey')),true);
 	}
 
+	if(! is_array($data)) {
+		logger('decode error');
+		return array();
+	}
+
 	if(! $data['success']) {
 		if($data['message'])
 			logger('remote pickup failed: ' . $data['message']);
@@ -1186,6 +1191,12 @@ function zot_import($arr, $sender_url) {
 			}
 
 			logger('zot_import: notify: ' . print_r($i['notify'],true), LOGGER_DATA, LOG_DEBUG);
+
+			if(! is_array($i['notify'])) {
+				logger('decode error');
+				continue;
+			}
+
 
 			$hub = zot_gethub($i['notify']['sender']);
 			if((! $hub) || ($hub['hubloc_url'] != $sender_url)) {

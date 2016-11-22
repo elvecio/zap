@@ -41,7 +41,7 @@ class Receiver {
 		if(! $this->messagetype)
 			$this->error = true;
 
-		if($this->data) {
+		if($this->data && is_array($this->data)) {
 			$this->sender     = ((array_key_exists('sender',$this->data)) ? $this->data['sender'] : null);
 			$this->recipients = ((array_key_exists('recipients',$this->data)) ? $this->data['recipients'] : null);
 		}
