@@ -3996,6 +3996,8 @@ function zotinfo($arr) {
 		$ret['site']['directory_url'] = z_root() . '/dirsearch';
 
 
+	$ret['site']['encryption'] = crypto_methods();
+
 	// hide detailed site information if you're off the grid
 
 	if($dirmode != DIRECTORY_MODE_STANDALONE) {
@@ -4036,14 +4038,14 @@ function zotinfo($arr) {
 					$visible_plugins[] = $rr['name'];
 		}
 
-		$ret['site']['plugins'] = $visible_plugins;
-		$ret['site']['sitehash'] = get_config('system','location_hash');
-		$ret['site']['sitename'] = get_config('system','sitename');
-		$ret['site']['sellpage'] = get_config('system','sellpage');
-		$ret['site']['location'] = get_config('system','site_location');
-		$ret['site']['realm'] = get_directory_realm();
-		$ret['site']['project'] = Zotlabs\Lib\System::get_platform_name() . ' ' . Zotlabs\Lib\System::get_server_role();
-		$ret['site']['version'] = Zotlabs\Lib\System::get_project_version();
+		$ret['site']['plugins']    = $visible_plugins;
+		$ret['site']['sitehash']   = get_config('system','location_hash');
+		$ret['site']['sitename']   = get_config('system','sitename');
+		$ret['site']['sellpage']   = get_config('system','sellpage');
+		$ret['site']['location']   = get_config('system','site_location');
+		$ret['site']['realm']      = get_directory_realm();
+		$ret['site']['project']    = Zotlabs\Lib\System::get_platform_name() . ' ' . Zotlabs\Lib\System::get_server_role();
+		$ret['site']['version']    = Zotlabs\Lib\System::get_project_version();
 
 	}
 
