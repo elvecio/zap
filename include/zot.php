@@ -112,18 +112,18 @@ function zot_get_hublocs($hash) {
  */
 function zot_build_packet($channel, $type = 'notify', $recipients = null, $remote_key = null, $secret = null, $extra = null) {
 
-	$data = array(
+	$data = [
 		'type' => $type,
-		'sender' => array(
+		'sender' => [
 			'guid' => $channel['channel_guid'],
 			'guid_sig' => base64url_encode(rsa_sign($channel['channel_guid'],$channel['channel_prvkey'])),
 			'url' => z_root(),
 			'url_sig' => base64url_encode(rsa_sign(z_root(),$channel['channel_prvkey'])),
 			'sitekey' => get_config('system','pubkey')
-		),
+		],
 		'callback' => '/post',
 		'version' => ZOT_REVISION
-	);
+	];
 
 	if ($recipients) {
 		for ($x = 0; $x < count($recipients); $x ++)
@@ -183,7 +183,8 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
 	if (strpos($webbie,'@') === false) {
 		$address = $webbie;
 		$host = App::get_hostname();
-	} else {
+	}
+	else {
 		$address = substr($webbie,0,strpos($webbie,'@'));
 		$host = substr($webbie,strpos($webbie,'@')+1);
 		if(strpos($host,'/'))
@@ -194,7 +195,7 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
 
 	if ((! $address) || (! $xchan_addr)) {
 		logger('zot_finger: no address :' . $webbie);
-		return array('success' => false);
+		return [ 'success' => false ];
 	}
 	logger('using xchan_addr: ' . $xchan_addr, LOGGER_DATA, LOG_DEBUG);
 
@@ -216,7 +217,8 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
 			logger('url: '.$url.', net: '.var_export($r[0]['hubloc_network'],true), LOGGER_DATA, LOG_DEBUG);
 			return array('success' => false);
 		}
-	} else {
+	}
+	else {
 		$url = 'https://' . $host;
 	}
 
@@ -226,12 +228,12 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
 	logger('zot_finger: ' . $address . ' at ' . $url, LOGGER_DEBUG);
 
 	if ($channel) {
-		$postvars = array(
+		$postvars = [
 			'address'    => $address,
 			'target'     => $channel['channel_guid'],
 			'target_sig' => $channel['channel_guid_sig'],
 			'key'        => $channel['channel_pubkey']
-		);
+		];
 
 		$result = z_post_url($url . $rhs,$postvars);
 
@@ -241,7 +243,9 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
 				$result = z_post_url('http://' . $host . $rhs,$postvars);
 			}
 		}
-	} else {
+	}
+	else {
+
 		$rhs .= '?f=&address=' . urlencode($address);
 
 		$result =  z_fetch_url($url . $rhs);
@@ -298,7 +302,8 @@ function zot_refresh($them, $channel = null, $force = false) {
 
 	if ($them['hubloc_url']) {
 		$url = $them['hubloc_url'];
-	} else {
+	}
+	else {
 		$r = null;
 
 		// if they re-installed the server we could end up with the wrong record - pointing to the old install.
@@ -334,7 +339,7 @@ function zot_refresh($them, $channel = null, $force = false) {
 
 	$token = random_string();
 
-	$postvars = array();
+	$postvars = [];
 
 	$postvars['token'] = $token;
 
@@ -395,11 +400,13 @@ function zot_refresh($them, $channel = null, $force = false) {
 
 		if($channel) {
 			if($j['permissions']['data']) {
-				$permissions = crypto_unencapsulate(array(
+				$permissions = crypto_unencapsulate(
+					[
 					'data' => $j['permissions']['data'],
 					'key'  => $j['permissions']['key'],
 					'iv'   => $j['permissions']['iv'],
-					'alg'  => $j['permissions']['alg']),
+					'alg'  => $j['permissions']['alg']
+					],
 					$channel['channel_prvkey']);
 				if($permissions)
 					$permissions = json_decode($permissions,true);
@@ -521,12 +528,14 @@ function zot_refresh($them, $channel = null, $force = false) {
 					if($new_connection) {
 						if(! \Zotlabs\Access\Permissions::PermsCompare($new_perms,$previous_perms))
 							Zotlabs\Daemon\Master::Summon(array('Notifier','permission_create',$new_connection[0]['abook_id']));
-						Zotlabs\Lib\Enotify::submit(array(
+						Zotlabs\Lib\Enotify::submit(
+							[
 							'type'       => NOTIFY_INTRO,
 							'from_xchan' => $x['hash'],
 							'to_xchan'   => $channel['channel_hash'],
-							'link'       => z_root() . '/connedit/' . $new_connection[0]['abook_id'],
-						));
+							'link'       => z_root() . '/connedit/' . $new_connection[0]['abook_id']
+							]
+						);
 
 						if(intval($permissions['view_stream'])) {
 							if(intval(get_pconfig($channel['channel_id'],'perm_limits','send_stream') & PERMS_PENDING)
@@ -536,6 +545,7 @@ function zot_refresh($them, $channel = null, $force = false) {
 
 
 						/** If there is a default group for this channel, add this connection to it */
+
 						$default_group = $channel['channel_default_group'];
 						if($default_group) {
 							require_once('include/group.php');
@@ -581,6 +591,7 @@ function zot_refresh($them, $channel = null, $force = false) {
  * @returns array|null null if site is blacklisted or not found, otherwise an
  *  array with an hubloc record
  */
+
 function zot_gethub($arr, $multiple = false) {
 
 	if($arr['guid'] && $arr['guid_sig'] && $arr['url'] && $arr['url_sig']) {
@@ -630,9 +641,10 @@ function zot_gethub($arr, $multiple = false) {
  *  * \b success boolean true or false
  *  * \b message (optional) error string only if success is false
  */
+
 function zot_register_hub($arr) {
 
-	$result = array('success' => false);
+	$result = [ 'success' => false ];
 
 	if($arr['url'] && $arr['url_sig'] && $arr['guid'] && $arr['guid_sig']) {
 
@@ -691,6 +703,7 @@ function zot_register_hub($arr) {
  *   * \e boolean \b success boolean true or false
  *   * \e string \b message (optional) error string only if success is false
  */
+
 function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 
 	call_hooks('import_xchan', $arr);
@@ -789,7 +802,8 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 			$what .= 'xchan ';
 			$changed = true;
 		}
-	} else {
+	}
+	else {
 		$import_photos = true;
 
 		if((($arr['site']['directory_mode'] === 'standalone')
@@ -825,7 +839,7 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 		$changed = true;
 	}
 
-	if ($import_photos) {
+	if($import_photos) {
 
 		require_once('include/photo/photo_driver.php');
 
@@ -834,9 +848,9 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 		$local = q("select channel_account_id, channel_id from channel where channel_hash = '%s' limit 1",
 			dbesc($xchan_hash)
 		);
-		if ($local) {
+		if($local) {
 			$ph = z_fetch_url($arr['photo'], true);
-			if ($ph['success']) {
+			if($ph['success']) {
 
 				$hash = import_channel_photo($ph['body'], $arr['photo_mimetype'], $local[0]['channel_account_id'], $local[0]['channel_id']);
 
@@ -874,11 +888,12 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 					false
 				);
 			}
-		} else {
+		}
+		else {
 			$photos = import_xchan_photo($arr['photo'], $xchan_hash);
 		}
-		if ($photos) {
-			if ($photos[4]) {
+		if($photos) {
+			if($photos[4]) {
 				// importing the photo failed somehow. Leave the photo_date alone so we can try again at a later date.
 				// This often happens when somebody joins the matrix with a bad cert.
 				$r = q("update xchan set xchan_photo_l = '%s', xchan_photo_m = '%s', xchan_photo_s = '%s', xchan_photo_mimetype = '%s'
@@ -889,7 +904,8 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 					dbesc($photos[3]),
 					dbesc($xchan_hash)
 				);
-			} else {
+			}
+			else {
 				$r = q("update xchan set xchan_photo_date = '%s', xchan_photo_l = '%s', xchan_photo_m = '%s', xchan_photo_s = '%s', xchan_photo_mimetype = '%s'
 					where xchan_hash = '%s'",
 					dbescdate(datetime_convert('UTC','UTC',$arr['photo_updated'])),
@@ -946,7 +962,8 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
 				$what .= 'profile ';
 				$changed = true;
 			}
-		} else {
+		}
+		else {
 			logger('import_xchan: profile not available - hiding');
 			// they may have made it private
 			$r = q("delete from xprof where xprof_hash = '%s'",
@@ -999,16 +1016,17 @@ function import_xchan($arr,$ud_flags = UPDATE_FLAGS_UPDATED, $ud_arr = null) {
  * @param array $arr - output of z_post_url()
  * @param array $outq - The queue structure attached to this request
  */
+
 function zot_process_response($hub, $arr, $outq) {
 
-	if (! $arr['success']) {
+	if(! $arr['success']) {
 		logger('zot_process_response: failed: ' . $hub);
 		return;
 	}
 
 	$x = json_decode($arr['body'], true);
 
-	if (! $x) {
+	if(! $x) {
 		logger('zot_process_response: No json from ' . $hub);
 		logger('zot_process_response: headers: ' . print_r($arr['header'],true), LOGGER_DATA, LOG_DEBUG);
 	}
@@ -1066,6 +1084,7 @@ function zot_process_response($hub, $arr, $outq) {
  *     decrypted and json decoded notify packet from remote site
  * @return array from zot_import()
  */
+
 function zot_fetch($arr) {
 
 	logger('zot_fetch: ' . print_r($arr,true), LOGGER_DATA, LOG_DEBUG);
@@ -1358,6 +1377,7 @@ function zot_import($arr, $sender_url) {
  * @param array $msg
  * @return NULL|array
  */
+
 function public_recips($msg) {
 
 	require_once('include/channel.php');
@@ -1567,6 +1587,7 @@ function allowed_public_recips($msg) {
  * @param boolean $request (optional) default false
  * @return array
  */
+
 function process_delivery($sender, $arr, $deliveries, $relay, $public = false, $request = false) {
 
 	$result = array();
@@ -1876,6 +1897,7 @@ function process_delivery($sender, $arr, $deliveries, $relay, $public = false, $
  *   * \e int \b mid
  * @param int $uid
  */
+
 function remove_community_tag($sender, $arr, $uid) {
 
 	if(! (activity_match($arr['verb'], ACTIVITY_TAG) && ($arr['obj_type'] == ACTIVITY_OBJ_TAGTERM)))
@@ -1946,6 +1968,7 @@ function remove_community_tag($sender, $arr, $uid) {
  * @param array $orig
  * @param int $uid
  */
+
 function update_imported_item($sender, $item, $orig, $uid) {
 
 	// If this is a comment being updated, remove any privacy information
@@ -1986,6 +2009,7 @@ function update_imported_item($sender, $item, $orig, $uid) {
  * @param boolean $relay
  * @return boolean|int post_id
  */
+
 function delete_imported_item($sender, $item, $uid, $relay) {
 
 	logger('delete_imported_item invoked', LOGGER_DEBUG);
@@ -2003,13 +2027,14 @@ function delete_imported_item($sender, $item, $uid, $relay) {
 		intval($uid)
 	);
 
-	if ($r) {
-		if ($r[0]['author_xchan'] === $sender['hash'] || $r[0]['owner_xchan'] === $sender['hash'] || $r[0]['source_xchan'] === $sender['hash'])
+	if($r) {
+		if($r[0]['author_xchan'] === $sender['hash'] || $r[0]['owner_xchan'] === $sender['hash'] || $r[0]['source_xchan'] === $sender['hash'])
 			$ownership_valid = true;
 
 		$post_id = $r[0]['id'];
 		$item_found = true;
-	} else {
+	}
+	else {
 
 		// perhaps the item is still in transit and the delete notification got here before the actual item did. Store it with the deleted flag set.
 		// item_store() won't try to deliver any notifications or start delivery chains if this flag is set.
@@ -2018,25 +2043,24 @@ function delete_imported_item($sender, $item, $uid, $relay) {
 
 		logger('delete received for non-existent item - storing item data.');
 
-		/** @BUG $arr is undefined here, so this is dead code */
-		if ($arr['author_xchan'] === $sender['hash'] || $arr['owner_xchan'] === $sender['hash'] || $arr['source_xchan'] === $sender['hash']) {
+		if($item['author_xchan'] === $sender['hash'] || $item['owner_xchan'] === $sender['hash'] || $item['source_xchan'] === $sender['hash']) {
 			$ownership_valid = true;
-			$item_result = item_store($arr);
+			$item_result = item_store($item);
 			$post_id = $item_result['item_id'];
 		}
 	}
 
-	if ($ownership_valid === false) {
+	if($ownership_valid === false) {
 		logger('delete_imported_item: failed: ownership issue');
 		return false;
 	}
 
 	require_once('include/items.php');
 
-	if ($item_found) {
-		if (intval($r[0]['item_deleted'])) {
+	if($item_found) {
+		if(intval($r[0]['item_deleted'])) {
 			logger('delete_imported_item: item was already deleted');
-			if (! $relay)
+			if(! $relay)
 				return false;
 
 			// This is a bit hackish, but may have to suffice until the notification/delivery loop is optimised
@@ -2147,6 +2171,7 @@ function process_mail_delivery($sender, $arr, $deliveries) {
  *   * \e string \b hash a xchan_hash
  * @param array $arr
  */
+
 function process_rating_delivery($sender, $arr) {
 
 	logger('process_rating_delivery: ' . print_r($arr,true));
@@ -2206,6 +2231,7 @@ function process_rating_delivery($sender, $arr) {
  * @param array $arr
  * @param array $deliveries (unused)
  */
+
 function process_profile_delivery($sender, $arr, $deliveries) {
 
 	logger('process_profile_delivery', LOGGER_DEBUG);
@@ -2302,6 +2328,7 @@ function check_location_move($sender_hash,$locations) {
  * @param boolean $absolute (optional) default false
  * @return array
  */
+
 function sync_locations($sender, $arr, $absolute = false) {
 
 	$ret = array();
@@ -2549,7 +2576,7 @@ function zot_encode_locations($channel) {
 			if(intval($channel['channel_removed']) && $hub['hubloc_url'] === z_root())
 				$hub['hubloc_deleted'] = 1;
 
-			$ret[] = array(
+			$ret[] = [
 				'host'     => $hub['hubloc_host'],
 				'address'  => $hub['hubloc_addr'],
 				'primary'  => (intval($hub['hubloc_primary']) ? true : false),
@@ -2558,7 +2585,7 @@ function zot_encode_locations($channel) {
 				'callback' => $hub['hubloc_callback'],
 				'sitekey'  => $hub['hubloc_sitekey'],
 				'deleted'  => (intval($hub['hubloc_deleted']) ? true : false)
-			);
+			];
 		}
 	}
 
@@ -2575,6 +2602,7 @@ function zot_encode_locations($channel) {
  * @param number $suppress_update default 0
  * @return boolean $updated if something changed
  */
+
 function import_directory_profile($hash, $profile, $addr, $ud_flags = UPDATE_FLAGS_UPDATED, $suppress_update = 0) {
 
 	logger('import_directory_profile', LOGGER_DEBUG);
@@ -2709,6 +2737,7 @@ function import_directory_profile($hash, $profile, $addr, $ud_flags = UPDATE_FLA
  * @param string $hash
  * @param array $keywords
  */
+
 function import_directory_keywords($hash, $keywords) {
 
 	$existing = array();
@@ -2753,6 +2782,7 @@ function import_directory_keywords($hash, $keywords) {
  * @param string $addr
  * @param int $flags (optional) default 0
  */
+
 function update_modtime($hash, $guid, $addr, $flags = 0) {
 
 	$dirmode = intval(get_config('system', 'directory_mode'));
@@ -2785,6 +2815,7 @@ function update_modtime($hash, $guid, $addr, $flags = 0) {
  * @param string $pubkey
  * @return boolean true if updated or inserted
  */
+
 function import_site($arr, $pubkey) {
 	if( (! is_array($arr)) || (! $arr['url']) || (! $arr['url_sig']))
 		return false;
@@ -2943,6 +2974,7 @@ function import_site($arr, $pubkey) {
  * @param array $packet (optional) default null
  * @param boolean $groups_changed (optional) default false
  */
+
 function build_sync_packet($uid = 0, $packet = null, $groups_changed = false) {
 
 	if(get_config('system','server_role') === 'basic')
@@ -3091,6 +3123,7 @@ function build_sync_packet($uid = 0, $packet = null, $groups_changed = false) {
  * @param array $deliveries
  * @return array
  */
+
 function process_channel_sync_delivery($sender, $arr, $deliveries) {
 
 	if(get_config('system','server_role') === 'basic')
@@ -3565,6 +3598,7 @@ function process_channel_sync_delivery($sender, $arr, $deliveries) {
  *   * \e string \b xchan_url
  * @return string
  */
+
 function get_rpost_path($observer) {
 	if(! $observer)
 		return '';
@@ -3580,6 +3614,7 @@ function get_rpost_path($observer) {
  * @param array $x
  * @return boolean|string return false or a hash
  */
+
 function import_author_zot($x) {
 
 	$hash = make_xchan_hash($x['guid'],$x['guid_sig']);
@@ -3619,6 +3654,7 @@ function import_author_zot($x) {
  * @param array $data
  * @return array
  */
+
 function zot_reply_message_request($data) {
 	$ret = array('success' => false);
 
