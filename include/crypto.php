@@ -115,6 +115,13 @@ function other_encapsulate($data,$pubkey,$alg) {
 	}
 }
 
+function crypto_methods() {
+
+	$r = [ 'aes128cbc', 'cast5cbc', 'aes256cbc' ];
+	call_hooks('crypto_methods',$r);
+	return $r;
+
+}
 
 
 function aes_encapsulate($data,$pubkey) {
