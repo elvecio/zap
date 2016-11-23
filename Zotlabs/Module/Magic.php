@@ -17,7 +17,7 @@ class Magic extends \Zotlabs\Web\Controller {
 		$dest = ((x($_REQUEST,'dest')) ? $_REQUEST['dest'] : '');
 		$test = ((x($_REQUEST,'test')) ? intval($_REQUEST['test']) : 0);
 		$rev  = ((x($_REQUEST,'rev'))  ? intval($_REQUEST['rev'])  : 0);
-		$rzid = ((x($_REQUEST,'rzid')) ? $_REQUEST['rzid'])  : 0);
+		$rzid = ((x($_REQUEST,'rzid')) ? $_REQUEST['rzid'])  : '');
 		$delegate = ((x($_REQUEST,'delegate')) ? $_REQUEST['delegate']  : '');
 	
 		$parsed = parse_url($dest);
