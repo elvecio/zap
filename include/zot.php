@@ -4410,7 +4410,15 @@ function zot_reply_pickup($data) {
 		}
 	}
 
-	$encrypted = crypto_encapsulate(json_encode($ret),$sitekey, CRYPTO_ALGORITHM);
+	// this is a bit of a hack because we don't have the hubloc_url here, only the callback url.
+	// worst case is we'll end up using aes256cbc if they've got a different post endpoint
+
+	$x = q("select site_crypto from site where site_url = '%s' limit 1",
+		dbesc(str_replace('/post','',$data['callback']))
+	);
+	$algorithm = zot_best_algorithm(($x) ? $x[0]['site_crypto'] : '');
+
+	$encrypted = crypto_encapsulate(json_encode($ret),$sitekey,$algorithm);
 	json_return_and_die($encrypted);
 
 	/* pickup: end */

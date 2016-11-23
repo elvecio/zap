@@ -133,12 +133,6 @@ class Magic extends \Zotlabs\Web\Controller {
 		if(local_channel()) {
 			$channel = \App::get_channel();
 
-			if($rzid && channel_reddress($channel) !== $rzid) {
-				logger('logged in as another channel than requested by remote site.');
-				goaway($dest);
-			}
-
-
 			$token = random_string();
 			$token_sig = base64url_encode(rsa_sign($token,$channel['channel_prvkey']));
 	 
