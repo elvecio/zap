@@ -2928,7 +2928,7 @@ function import_site($arr, $pubkey) {
 	$site_location = htmlspecialchars($arr['location'],ENT_COMPAT,'UTF-8',false);
 	$site_realm = htmlspecialchars($arr['realm'],ENT_COMPAT,'UTF-8',false);
 	$site_project = htmlspecialchars($arr['project'],ENT_COMPAT,'UTF-8',false);
-	$site_crypto = ((array_key_exists('encryption',$arr)) ? htmlspecialchars(implode(',',$arr['encryption']),ENT_COMPAT,'UTF-8',false) : '');
+	$site_crypto = ((array_key_exists('encryption',$arr) && is_array($arr['encryption'])) ? htmlspecialchars(implode(',',$arr['encryption']),ENT_COMPAT,'UTF-8',false) : '');
 	$site_version = ((array_key_exists('version',$arr)) ? htmlspecialchars($arr['version'],ENT_COMPAT,'UTF-8',false) : '');
 
 	// You can have one and only one primary directory per realm.
@@ -2940,8 +2940,6 @@ function import_site($arr, $pubkey) {
 			&& ($arr['url'] != get_directory_primary())) {
 		$site_directory = DIRECTORY_MODE_NORMAL;
 	}
-
-	logger('site_crypto: ' . $site_crypto);
 
 	if($exists) {
 		if(($siterecord['site_flags'] != $site_directory)
