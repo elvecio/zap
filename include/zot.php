@@ -1136,6 +1136,8 @@ function zot_fetch($arr) {
 	}
 
 	foreach($ret_hubs as $ret_hub) {
+
+
 		$data = array(
 			'type'    => 'pickup',
 			'url'     => z_root(),
@@ -1145,7 +1147,10 @@ function zot_fetch($arr) {
 			'secret_sig' => base64url_encode(rsa_sign($arr['secret'],get_config('system','prvkey')))
 		);
 
-		$datatosend = json_encode(crypto_encapsulate(json_encode($data),$ret_hub['hubloc_sitekey'], $ret_hub['site_crypto']));
+		$algorithm = zot_best_algorithm($ret_hub['site_crypto']);
+
+
+		$datatosend = json_encode(crypto_encapsulate(json_encode($data),$ret_hub['hubloc_sitekey'], $algorithm));
 
 		$fetch = zot_zot($url,$datatosend);
 

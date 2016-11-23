@@ -93,6 +93,17 @@ function other_encapsulate($data,$pubkey,$alg) {
 
 	$fn = strtoupper($alg) . '_encrypt';
 	if(function_exists($fn)) {
+
+		// A bit hesitant to use openssl_random_pseudo_bytes() as we know
+		// it has been historically targeted by US agencies for 'weakening'.
+		// It is still arguably better than trying to come up with an
+		// alternative cryptographically secure random generator.
+		// There is little point in using the optional second arg to flag the
+		// assurance of security since it is meaningless if the source algorithms
+		// have been compromised. Also none of this matters if RSA has been
+		// compromised by state actors and evidence is mounting that this has
+		// already happened.   
+
 		$key = openssl_random_pseudo_bytes(32);
 		$iv  = openssl_random_pseudo_bytes(16);
 		$result['data'] = base64url_encode($fn($data,$key,$iv),true);
