@@ -110,7 +110,7 @@ function zot_get_hublocs($hash) {
  * @param string $extra
  * @returns string json encoded zot packet
  */
-function zot_build_packet($channel, $type = 'notify', $recipients = null, $remote_key = null, $secret = null, $extra = null) {
+function zot_build_packet($channel, $type = 'notify', $recipients = null, $remote_key = null, $methods = '', $secret = null, $extra = null) {
 
 	$data = [
 		'type' => $type,
@@ -147,12 +147,45 @@ function zot_build_packet($channel, $type = 'notify', $recipients = null, $remot
 
 	// Hush-hush ultra top-secret mode
 
-	if ($remote_key) {
-		$data = crypto_encapsulate(json_encode($data),$remote_key, CRYPTO_ALGORITHM);
+	if($remote_key) {
+		$algorithm = zot_best_algorithm($methods);
+		$data = crypto_encapsulate(json_encode($data),$remote_key, $algorithm);
 	}
 
 	return json_encode($data);
 }
+
+/**
+ * @brief choose best encryption function from those available on both sites
+ * 
+ * @param string $methods
+ *   comma separated list of encryption methods
+ * @return string first match from our site method preferences crypto_methods() array
+ * (which is common to both sites) or 'aes256cbc' if no matches are found.
+ */
+
+function zot_best_algorithm($methods) {
+
+	if($methods) {
+		$x = explode(',',$methods);
+		if($x) {
+			$y = crypto_methods();
+			if($y) {
+				foreach($y as $yv) {
+					$yv = trim($yv);
+					if(in_array($yv,$x)) {
+						return($yv);
+					}
+				}
+			}
+		}
+	}
+
+	return 'aes256cbc';
+
+}
+
+
 
 /**
  * @brief
@@ -605,7 +638,7 @@ function zot_gethub($arr, $multiple = false) {
 		$limit = (($multiple) ? '' : ' limit 1 ');
 		$sitekey = ((array_key_exists('sitekey',$arr) && $arr['sitekey']) ? " and hubloc_sitekey = '" . protect_sprintf($arr['sitekey']) . "' " : '');
 
-		$r = q("select * from hubloc
+		$r = q("select hubloc.*, site.site_crypto from hubloc left join site on hubloc_url = site_url
 				where hubloc_guid = '%s' and hubloc_guid_sig = '%s'
 				and hubloc_url = '%s' and hubloc_url_sig = '%s'
 				$sitekey $limit",
@@ -1112,7 +1145,7 @@ function zot_fetch($arr) {
 			'secret_sig' => base64url_encode(rsa_sign($arr['secret'],get_config('system','prvkey')))
 		);
 
-		$datatosend = json_encode(crypto_encapsulate(json_encode($data),$ret_hub['hubloc_sitekey'], CRYPTO_ALGORITHM));
+		$datatosend = json_encode(crypto_encapsulate(json_encode($data),$ret_hub['hubloc_sitekey'], $ret_hub['site_crypto']));
 
 		$fetch = zot_zot($url,$datatosend);
 
@@ -2895,7 +2928,7 @@ function import_site($arr, $pubkey) {
 	$site_location = htmlspecialchars($arr['location'],ENT_COMPAT,'UTF-8',false);
 	$site_realm = htmlspecialchars($arr['realm'],ENT_COMPAT,'UTF-8',false);
 	$site_project = htmlspecialchars($arr['project'],ENT_COMPAT,'UTF-8',false);
-	$site_crypto = ((array_key_exists('encryption',$arr)) ? implode(',', htmlspecialchars($arr['encryption'],ENT_COMPAT,'UTF-8',false)) : '');
+	$site_crypto = ((array_key_exists('encryption',$arr)) ? htmlspecialchars(implode(',',$arr['encryption']),ENT_COMPAT,'UTF-8',false) : '');
 	$site_version = ((array_key_exists('version',$arr)) ? htmlspecialchars($arr['version'],ENT_COMPAT,'UTF-8',false) : '');
 
 	// You can have one and only one primary directory per realm.
@@ -2907,6 +2940,8 @@ function import_site($arr, $pubkey) {
 			&& ($arr['url'] != get_directory_primary())) {
 		$site_directory = DIRECTORY_MODE_NORMAL;
 	}
+
+	logger('site_crypto: ' . $site_crypto);
 
 	if($exists) {
 		if(($siterecord['site_flags'] != $site_directory)
@@ -3026,7 +3061,7 @@ function build_sync_packet($uid = 0, $packet = null, $groups_changed = false) {
 	if(intval($channel['channel_removed']))
 		return;
 
-	$h = q("select * from hubloc where hubloc_hash = '%s' and hubloc_deleted = 0",
+	$h = q("select hubloc.*, site.site_crypto from hubloc left join site on site_url = hubloc_url where hubloc_hash = '%s' and hubloc_deleted = 0",
 		dbesc($channel['channel_hash'])
 	);
 
@@ -3113,7 +3148,7 @@ function build_sync_packet($uid = 0, $packet = null, $groups_changed = false) {
 
 	foreach($synchubs as $hub) {
 		$hash = random_string();
-		$n = zot_build_packet($channel,'notify',$env_recips,$hub['hubloc_sitekey'],$hash);
+		$n = zot_build_packet($channel,'notify',$env_recips,$hub['hubloc_sitekey'],$hub['site_crypto'],$hash);
 		queue_insert(array(
 			'hash'       => $hash,
 			'account_id' => $channel['channel_account_id'],
@@ -3707,7 +3742,7 @@ function zot_reply_message_request($data) {
 	if ($messages) {
 		$env_recips = null;
 
-		$r = q("select * from hubloc where hubloc_hash = '%s' and hubloc_error = 0 and hubloc_deleted = 0",
+		$r = q("select hubloc.*, site.site_crypto from hubloc left join site on hulob_url = site_url where hubloc_hash = '%s' and hubloc_error = 0 and hubloc_deleted = 0",
 			dbesc($sender_hash)
 		);
 		if (! $r) {
@@ -3729,7 +3764,7 @@ function zot_reply_message_request($data) {
 			 * create a notify packet and drop the actual message packet in the queue for pickup
 			 */
 
-			$n = zot_build_packet($c[0],'notify',$env_recips,(($private) ? $hub['hubloc_sitekey'] : null),$hash,array('message_id' => $data['message_id']));
+			$n = zot_build_packet($c[0],'notify',$env_recips,(($private) ? $hub['hubloc_sitekey'] : null),$hub['site_crypto'],$hash,array('message_id' => $data['message_id']));
 
 			queue_insert(array(
 				'hash'       => $hash,
@@ -3966,7 +4001,12 @@ function zotinfo($arr) {
 			$permissions['connected'] = true;
 	}
 
-	$ret['permissions'] = (($ztarget && $zkey) ? crypto_encapsulate(json_encode($permissions),$zkey, CRYPTO_ALGORITHM) : $permissions);
+	// encrypt this with the default aes256cbc since we cannot be sure at this point which
+	// algorithms are preferred for communications with the remote site; notably
+	// because ztarget refers to an xchan and we don't necessarily know the origination
+	// location.
+
+	$ret['permissions'] = (($ztarget && $zkey) ? crypto_encapsulate(json_encode($permissions),$zkey) : $permissions);
 
 	if($permissions['view_profile'])
 		$ret['profile']  = $profile;
@@ -4035,7 +4075,7 @@ function zotinfo($arr) {
 			$r = q("select * from addon where hidden = 0");
 			if($r)
 				foreach($r as $rr)
-					$visible_plugins[] = $rr['name'];
+					$visible_plugins[] = $rr['aname'];
 		}
 
 		$ret['site']['plugins']    = $visible_plugins;
