@@ -289,7 +289,7 @@ class Channel {
 		$yes_no = array(t('No'),t('Yes'));
 	
 	
-		$p = q("SELECT * FROM `profile` WHERE `is_default` = 1 AND `uid` = %d LIMIT 1",
+		$p = q("SELECT * FROM profile WHERE is_default = 1 AND uid = %d LIMIT 1",
 			intval(local_channel())
 		);
 		if(count($p))
@@ -319,7 +319,7 @@ class Channel {
 		foreach($global_perms as $k => $perm) {
 			$options = array();
 			foreach($perm_opts as $opt) {
-				if((! strstr($perm,'view')) && $opt[1] == PERMS_PUBLIC)
+				if((! strstr($k,'view')) && $opt[1] == PERMS_PUBLIC)
 					continue;
 				$options[$opt[1]] = $opt[0];
 			}
@@ -327,7 +327,7 @@ class Channel {
 		}
 	
 	
-		//logger('permiss: ' . print_r($permiss,true));
+		//		logger('permiss: ' . print_r($permiss,true));
 	
 	
 	

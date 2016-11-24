@@ -202,7 +202,7 @@ function string2bb(element) {
 	$.fn.search_autocomplete = function(backend_url) {
 		// Autocomplete contacts
 		contacts = {
-			match: /(^@)([^\n]{2,})$/,
+			match: /(^@)([^\n]{3,})$/,
 			index: 2,
 			search: function(term, callback) { contact_search(term, callback, backend_url, 'x', [], spinelement='#nav-search-spinner'); },
 			replace: basic_replace,
@@ -269,7 +269,7 @@ function string2bb(element) {
 	$.fn.bbco_autocomplete = function(type) {
 
 		if(type=='bbcode') {
-			var open_close_elements = ['bold', 'italic', 'underline', 'overline', 'strike', 'superscript', 'subscript', 'quote', 'code', 'open', 'spoiler', 'map', 'nobb', 'list', 'checklist', 'ul', 'ol', 'dl', 'li', 'table', 'tr', 'th', 'td', 'center', 'color', 'font', 'size', 'zrl', 'zmg', 'rpost', 'qr', 'observer'];
+			var open_close_elements = ['bold', 'italic', 'underline', 'overline', 'strike', 'superscript', 'subscript', 'quote', 'code', 'open', 'spoiler', 'map', 'nobb', 'list', 'checklist', 'ul', 'ol', 'dl', 'li', 'table', 'tr', 'th', 'td', 'center', 'color', 'font', 'size', 'zrl', 'zmg', 'rpost', 'qr', 'observer', 'embed'];
 			var open_elements = ['observer.baseurl', 'observer.address', 'observer.photo', 'observer.name', 'observer.webname', 'observer.url', '*', 'hr',  ];
 
 			var elements = open_close_elements.concat(open_elements);

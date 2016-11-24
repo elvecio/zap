@@ -1515,7 +1515,11 @@ nav .dropdown-menu {
 	color: $nav_icon_colour;
 }
 
-#avatar:hover + #usermenu-caret {
+.usermenu-head {
+	float: left;
+}
+
+.usermenu-head:hover #usermenu-caret {
 	color: $nav_active_icon_colour;
 }
 
@@ -1645,6 +1649,7 @@ main.fullscreen .section-content-wrapper-np {
 
 .atoken-index-row:hover td,
 .chatroom-index-row:hover td,
+.wikis-index-row:hover td,
 .locs-index-row:hover td,
 [id^="cloud-index-"]:hover td,
 .cloud-index-active {
@@ -2021,11 +2026,17 @@ dl.bb-dl > dd > li {
 }
 
 .embed-photo-selected-photo {
-    border-color: blue;
-    border-style: solid;
-    border-width: 5px;
+	border-color: blue;
+	border-style: solid;
+	border-width: 5px;
 }
 
 #wiki-preview img {
-    max-width: 100%;
+	max-width: 100%;
+}
+
+.sub-menu {
+	margin-top: 10px;
+	padding-left: 15px;
+	border-left: 3px solid #eee;
 }

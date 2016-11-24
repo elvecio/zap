@@ -5,9 +5,9 @@
  */
 
 /**
- * Hubzilla.
+ * Zap.
  *
- * Hubzilla is an open source decentralised communications
+ * Zap is an open source decentralised communications
  * platform combined with a decentralised identity/authentication framework
  * wrapped in an extensible content management system, providing website designers
  * the ability to embed fully decentralised communications and social tools
@@ -27,6 +27,9 @@
  * documented.
  */
 
+// composer autoloader for all namespaced Classes
+require_once('vendor/autoload.php');
+
 require_once('include/config.php');
 require_once('include/network.php');
 require_once('include/plugin.php');
@@ -41,13 +44,14 @@ require_once('include/taxonomy.php');
 require_once('include/channel.php');
 require_once('include/connections.php');
 require_once('include/account.php');
+require_once('include/zid.php');
 
 
-define ( 'PLATFORM_NAME',           'hubzilla' );
-define ( 'STD_VERSION',             '1.14' );
-define ( 'ZOT_REVISION',            '1.1' );
+define ( 'PLATFORM_NAME',           'zap' );
+define ( 'STD_VERSION',             '3.0' );
+define ( 'ZOT_REVISION',            '1.2' );
 
-define ( 'DB_UPDATE_VERSION',       1183  );
+define ( 'DB_UPDATE_VERSION',       1185  );
 
 
 /**
@@ -602,25 +606,35 @@ function sys_boot() {
 
 	@include('.htconfig.php');
 
+	// allow somebody to set some initial settings just in case they can't
+	// install without special fiddling
+
+	if(App::$install && file_exists('.htpreconfig.php'))
+		@include('.htpreconfig.php');
+
 	if(array_key_exists('default_timezone',get_defined_vars())) {
 		App::$config['system']['timezone'] = $default_timezone;
 	}
 
 	$a->convert();
 
-	if(defined('UNO')) {
-		if(UNO)
-			App::$config['system']['server_role'] = 'basic';
-		else
-			App::$config['system']['server_role'] = 'standard';
-	}
-
-	if(! (array_key_exists('server_role',App::$config['system']) && App::$config['system']['server_role']))
-		App::$config['system']['server_role'] = 'standard';
+	App::$config['system']['server_role'] = 'pro';
 
 	App::$timezone = ((App::$config['system']['timezone']) ? App::$config['system']['timezone'] : 'UTC');
 	date_default_timezone_set(App::$timezone);
 
+
+	if(! defined('DEFAULT_PLATFORM_ICON')) {
+		define( 'DEFAULT_PLATFORM_ICON', '/images/hz-32.png' );
+	}
+
+	if(! defined('DEFAULT_NOTIFY_ICON')) {
+		define( 'DEFAULT_NOTIFY_ICON', '/images/hz-white-32.png' );
+	}
+
+	if(! defined('CRYPTO_ALGORITHM')) {
+		define( 'CRYPTO_ALGORITHM', 'aes256cbc' );
+	}
 
 	/*
 	 * Try to open the database;
@@ -695,44 +709,14 @@ function startup() {
 }
 
 
-class ZotlabsAutoloader {
-    static public function loader($className) {
-		$debug = false;
-        $filename = str_replace('\\', '/', $className) . ".php";
-        if(file_exists($filename)) {
-            include($filename);
-            if (class_exists($className)) {
-                return TRUE;
-            }
-        }
-		$arr = explode('\\',$className);
-		if($arr && count($arr) > 1) {
-			if(! $arr[0])
-				$arr = array_shift($arr);
-	        $filename = 'addon/' . lcfirst($arr[0]) . '/' . $arr[1] . ((count($arr) === 2) ? '.php' : '/' . $arr[2] . ".php");
-    	    if(file_exists($filename)) {
-        	    include($filename);
-            	if (class_exists($className)) {
-                	return TRUE;
-	            }
-    	    }
-		}
-
-        return FALSE;
-    }
-}
-
-
 /**
  * class miniApp
  *
  * this is a transient structure which is needed to convert the $a->config settings
  * from older (existing) htconfig files which used a global App ($a) into the updated App structure
- * which is now static (although currently constructed at startup). We are only converting 
- * 'system' config settings. 
+ * which is now static (although currently constructed at startup). We are only converting
+ * 'system' config settings.
  */
-
-
 class miniApp {
 	public $config = array('system' => array());
 
@@ -976,29 +960,19 @@ class App {
 		self::$is_mobile = $mobile_detect->isMobile();
 		self::$is_tablet = $mobile_detect->isTablet();
 
-		self::head_set_icon('/images/hz-32.png');
+		self::head_set_icon(DEFAULT_PLATFORM_ICON);
 
 		/*
 		 * register template engines
 		 */
-
-		spl_autoload_register('ZotlabsAutoloader::loader');
 
 		self::$meta= new Zotlabs\Web\HttpMeta();
 
 		// create an instance of the smarty template engine so we can register it.
 
 		$smarty = new Zotlabs\Render\SmartyTemplate();
-
-		$dc = get_declared_classes();
-
-		foreach ($dc as $k) {
-			if(in_array('Zotlabs\\Render\\TemplateEngine', class_implements($k))) {
-				self::register_template_engine($k);
-			}
-		}
-
-
+		/// @todo validate if this is still the desired behavior
+		self::register_template_engine(get_class($smarty));
 
 	}
 
@@ -1159,9 +1133,9 @@ class App {
 
 	public static function build_pagehead() {
 
-		$user_scalable = ((local_channel()) ? get_pconfig(local_channel(),'system','user_scalable') : 1);
+		$user_scalable = ((local_channel()) ? get_pconfig(local_channel(),'system','user_scalable') : 0);
 		if ($user_scalable === false)
-			$user_scalable = 1;
+			$user_scalable = 0;
 
 		$preload_images = ((local_channel()) ? get_pconfig(local_channel(),'system','preload_images') : 0);
 		if ($preload_images === false)
@@ -1757,14 +1731,6 @@ function login($register = false, $form_id = 'main-login', $hiddens=false) {
  * @brief Used to end the current process, after saving session state.
  */
 function killme() {
-
-	// Ensure that closing the database is the last function on the shutdown stack.
-	// If it is closed prematurely sessions might not get saved correctly.
-	// Note the second arg to PHP's session_set_save_handler() seems to order that shutdown 
-	// procedure last despite our best efforts, so we don't use that and implictly
-	// call register_shutdown_function('session_write_close'); within Zotlabs\Web\Session::init()
-	// and then register the database close function here where nothing else can register
-	// after it.
 
 	register_shutdown_function('shutdown');
 	exit;

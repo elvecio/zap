@@ -78,13 +78,10 @@ class Enotify {
 		$sender_email = get_config('system','from_email');
 		if(! $sender_email)
 			$sender_email = 'Administrator' . '@' . \App::get_hostname();
-
 	
 		$sender_name = get_config('system','from_email_name');
 		if(! $sender_name)
 			$sender_name = \Zotlabs\Lib\System::get_site_name();
-
-
 
 
 		$additional_mail_header = "";
@@ -104,6 +101,10 @@ class Enotify {
 			else {
 				$title = $params['item']['title'];
 				$body = $params['item']['body'];
+			}
+			if($params['item']['created'] < datetime_convert('UTC','UTC','now - 1 month')) {
+				logger('notification invoked for an old item which may have been refetched.',LOGGER_DEBUG,LOG_INFO);
+				return;
 			}
 		} 
 		else {
@@ -364,7 +365,7 @@ class Enotify {
 	do {
 		$dups = false;
 		$hash = random_string();
-		$r = q("SELECT `id` FROM `notify` WHERE `hash` = '%s' LIMIT 1",
+		$r = q("SELECT id FROM notify WHERE hash = '%s' LIMIT 1",
 			dbesc($hash));
 		if ($r)
 			$dups = true;
@@ -633,7 +634,7 @@ class Enotify {
 		call_hooks('email_send', $params);
 
 		if($params['sent']) {
-			logger("notification: enotify::send (addon) returns " . $params['result'], LOGGER_DEBUG);
+			logger("notification: enotify::send (addon) returns " . (($params['result']) ? 'success' : 'failure'), LOGGER_DEBUG);
 			return $params['result'];
 		}
 
@@ -676,7 +677,7 @@ class Enotify {
 			$multipartMessageBody,							// message body
 			$messageHeader									// message headers
 		);
-		logger("notification: enotify::send returns " . $res, LOGGER_DEBUG);
+		logger("notification: enotify::send returns " . (($res) ? 'success' : 'failure'), LOGGER_DEBUG);
 		return $res;
 	}
 

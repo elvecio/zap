@@ -621,19 +621,17 @@ msgstr "Dit proces kan enkele minuten in beslag nemen. Klik maar één keer op o
 msgid "Submit"
 msgstr "Opslaan"
 
-#: ../../Zotlabs/Module/Wiki.php:100
-msgid ""
-"\"# Wiki Sandbox\\n\\nContent you **edit** and **preview** here *will not be"
-" saved*.\""
-msgstr "\"# Wiki Sandbox\\n\\nWat er hier onder **edit** en **preview** staat *wordt niet opgeslagen*.\""
+#: ../../Zotlabs/Module/Bookmarks.php:53
+msgid "Bookmark added"
+msgstr "Bladwijzer toegevoegd"
 
-#: ../../Zotlabs/Module/Wiki.php:169
-msgid "Revision Comparison"
-msgstr "Revisies vergelijken"
+#: ../../Zotlabs/Module/Bookmarks.php:75
+msgid "My Bookmarks"
+msgstr "Mijn bladwijzers"
 
-#: ../../Zotlabs/Module/Wiki.php:170
-msgid "Revert"
-msgstr "Ongedaan maken"
+#: ../../Zotlabs/Module/Bookmarks.php:86
+msgid "My Connections Bookmarks"
+msgstr "Bladwijzers van mijn connecties"
 
 #: ../../Zotlabs/Module/Admin/Accounts.php:36
 #, php-format
@@ -2572,6 +2570,10 @@ msgstr "Dit menu bewerken"
 msgid "Menu could not be deleted."
 msgstr "Menu kon niet verwijderd worden."
 
+#: ../../Zotlabs/Module/Menu.php:144 ../../Zotlabs/Module/Mitem.php:28
+msgid "Menu not found."
+msgstr "Menu niet gevonden."
+
 #: ../../Zotlabs/Module/Menu.php:149
 msgid "Edit Menu"
 msgstr "Menu bewerken"
@@ -3165,6 +3167,265 @@ msgstr "3. Klik op [+ Verbinden]"
 #: ../../Zotlabs/Module/Locs.php:25 ../../Zotlabs/Module/Locs.php:54
 msgid "Location not found."
 msgstr "Locatie niet gevonden."
+
+#: ../../Zotlabs/Module/Locs.php:62
+msgid "Location lookup failed."
+msgstr "Opzoeken locatie mislukt"
+
+#: ../../Zotlabs/Module/Locs.php:66
+msgid ""
+"Please select another location to become primary before removing the primary"
+" location."
+msgstr "Kies eerst een andere primaire locatie alvorens de huidige primaire locatie te verwijderen."
+
+#: ../../Zotlabs/Module/Locs.php:95
+msgid "Syncing locations"
+msgstr "Locaties synchronizeren"
+
+#: ../../Zotlabs/Module/Locs.php:105
+msgid "No locations found."
+msgstr "Geen locaties gevonden."
+
+#: ../../Zotlabs/Module/Locs.php:116
+msgid "Manage Channel Locations"
+msgstr "Kanaallocaties beheren"
+
+#: ../../Zotlabs/Module/Locs.php:119
+msgid "Primary"
+msgstr "Primair"
+
+#: ../../Zotlabs/Module/Locs.php:122
+msgid "Sync Now"
+msgstr "Nu synchroniseren"
+
+#: ../../Zotlabs/Module/Locs.php:123
+msgid "Please wait several minutes between consecutive operations."
+msgstr "Wacht enkele minuten tussen opeenvolgende handelingen."
+
+#: ../../Zotlabs/Module/Locs.php:124
+msgid ""
+"When possible, drop a location by logging into that website/hub and removing"
+" your channel."
+msgstr "Wij adviseren, wanneer dit (nog) mogelijk is, de locatie te verwijderen door op de hub van de kloon in te loggen en het kanaal daar te verwijderen."
+
+#: ../../Zotlabs/Module/Locs.php:125
+msgid "Use this form to drop the location if the hub is no longer operating."
+msgstr "Gebruik dit formulier om de locatie te verwijderen wanneer de hub van de kloon niet meer operationeel is."
+
+#: ../../Zotlabs/Module/Rate.php:156
+msgid "Website:"
+msgstr "Website:"
+
+#: ../../Zotlabs/Module/Rate.php:159
+#, php-format
+msgid "Remote Channel [%s] (not yet known on this site)"
+msgstr "Kanaal op afstand [%s] (nog niet op deze hub bekend)"
+
+#: ../../Zotlabs/Module/Rate.php:160
+msgid "Rating (this information is public)"
+msgstr "Beoordeling (deze informatie is openbaar)"
+
+#: ../../Zotlabs/Module/Rate.php:161
+msgid "Optionally explain your rating (this information is public)"
+msgstr "Verklaar jouw beoordeling (niet verplicht, deze informatie is openbaar)"
+
+#: ../../Zotlabs/Module/Like.php:19
+msgid "Like/Dislike"
+msgstr "Leuk/niet leuk"
+
+#: ../../Zotlabs/Module/Like.php:24
+msgid "This action is restricted to members."
+msgstr "Deze actie kan alleen door $Projectname-leden worden uitgevoerd."
+
+#: ../../Zotlabs/Module/Like.php:25
+msgid ""
+"Please <a href=\"rmagic\">login with your $Projectname ID</a> or <a "
+"href=\"register\">register as a new $Projectname member</a> to continue."
+msgstr "Je dient <a href=\"rmagic\">in te loggen met je $Projectname-account</a> of <a href=\"register\">een nieuw $Projectname-account aan te maken</a> om verder te kunnen gaan."
+
+#: ../../Zotlabs/Module/Like.php:105 ../../Zotlabs/Module/Like.php:131
+#: ../../Zotlabs/Module/Like.php:169
+msgid "Invalid request."
+msgstr "Ongeldig verzoek"
+
+#: ../../Zotlabs/Module/Like.php:117 ../../include/conversation.php:126
+msgid "channel"
+msgstr "kanaal"
+
+#: ../../Zotlabs/Module/Like.php:146
+msgid "thing"
+msgstr "ding"
+
+#: ../../Zotlabs/Module/Like.php:192
+msgid "Channel unavailable."
+msgstr "Kanaal  niet beschikbaar."
+
+#: ../../Zotlabs/Module/Like.php:240
+msgid "Previous action reversed."
+msgstr "Vorige actie omgedraaid"
+
+#: ../../Zotlabs/Module/Like.php:370 ../../Zotlabs/Module/Subthread.php:87
+#: ../../Zotlabs/Module/Tagger.php:47 ../../include/text.php:1991
+#: ../../include/conversation.php:120
+msgid "photo"
+msgstr "foto"
+
+#: ../../Zotlabs/Module/Like.php:370 ../../Zotlabs/Module/Subthread.php:87
+#: ../../include/text.php:1997 ../../include/conversation.php:148
+msgid "status"
+msgstr "bericht"
+
+#: ../../Zotlabs/Module/Like.php:372 ../../Zotlabs/Module/Events.php:253
+#: ../../Zotlabs/Module/Tagger.php:51 ../../include/text.php:1994
+#: ../../include/conversation.php:123 ../../include/event.php:961
+msgid "event"
+msgstr "gebeurtenis"
+
+#: ../../Zotlabs/Module/Like.php:419 ../../include/conversation.php:164
+#, php-format
+msgid "%1$s likes %2$s's %3$s"
+msgstr "%1$s vindt %3$s van %2$s leuk"
+
+#: ../../Zotlabs/Module/Like.php:421 ../../include/conversation.php:167
+#, php-format
+msgid "%1$s doesn't like %2$s's %3$s"
+msgstr "%1$s vindt %3$s van %2$s niet leuk"
+
+#: ../../Zotlabs/Module/Like.php:423
+#, php-format
+msgid "%1$s agrees with %2$s's %3$s"
+msgstr "%1$s is het eens met %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:425
+#, php-format
+msgid "%1$s doesn't agree with %2$s's %3$s"
+msgstr "%1$s is het niet eens met %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:427
+#, php-format
+msgid "%1$s abstains from a decision on %2$s's %3$s"
+msgstr "%1$s onthoudt zich van een besluit over %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:429
+#, php-format
+msgid "%1$s is attending %2$s's %3$s"
+msgstr "%1$s is aanwezig op %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:431
+#, php-format
+msgid "%1$s is not attending %2$s's %3$s"
+msgstr "%1$s is niet aanwezig op %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:433
+#, php-format
+msgid "%1$s may attend %2$s's %3$s"
+msgstr "%1$s is mogelijk aanwezig op %2$s's %3$s"
+
+#: ../../Zotlabs/Module/Like.php:538
+msgid "Action completed."
+msgstr "Actie voltooid"
+
+#: ../../Zotlabs/Module/Like.php:539
+msgid "Thank you."
+msgstr "Bedankt"
+
+#: ../../Zotlabs/Module/Profiles.php:24 ../../Zotlabs/Module/Profiles.php:189
+#: ../../Zotlabs/Module/Profiles.php:246 ../../Zotlabs/Module/Profiles.php:625
+msgid "Profile not found."
+msgstr "Profiel niet gevonden."
+
+#: ../../Zotlabs/Module/Profiles.php:44
+msgid "Profile deleted."
+msgstr "Profiel verwijderd."
+
+#: ../../Zotlabs/Module/Profiles.php:68 ../../Zotlabs/Module/Profiles.php:104
+msgid "Profile-"
+msgstr "Profiel-"
+
+#: ../../Zotlabs/Module/Profiles.php:89 ../../Zotlabs/Module/Profiles.php:132
+msgid "New profile created."
+msgstr "Nieuw profiel aangemaakt."
+
+#: ../../Zotlabs/Module/Profiles.php:110
+msgid "Profile unavailable to clone."
+msgstr "Profiel niet beschikbaar om te klonen"
+
+#: ../../Zotlabs/Module/Profiles.php:151
+msgid "Profile unavailable to export."
+msgstr "Geen profiel beschikbaar om te exporteren"
+
+#: ../../Zotlabs/Module/Profiles.php:256
+msgid "Profile Name is required."
+msgstr "Profielnaam is vereist"
+
+#: ../../Zotlabs/Module/Profiles.php:427
+msgid "Marital Status"
+msgstr "Huwelijke status"
+
+#: ../../Zotlabs/Module/Profiles.php:431
+msgid "Romantic Partner"
+msgstr "Romantische partner"
+
+#: ../../Zotlabs/Module/Profiles.php:435 ../../Zotlabs/Module/Profiles.php:736
+msgid "Likes"
+msgstr "Houdt van"
+
+#: ../../Zotlabs/Module/Profiles.php:439 ../../Zotlabs/Module/Profiles.php:737
+msgid "Dislikes"
+msgstr "Houdt niet van"
+
+#: ../../Zotlabs/Module/Profiles.php:443 ../../Zotlabs/Module/Profiles.php:744
+msgid "Work/Employment"
+msgstr "Werk/arbeid"
+
+#: ../../Zotlabs/Module/Profiles.php:446
+msgid "Religion"
+msgstr "Religie"
+
+#: ../../Zotlabs/Module/Profiles.php:450
+msgid "Political Views"
+msgstr "Politieke overtuigingen"
+
+#: ../../Zotlabs/Module/Profiles.php:454
+msgid "Gender"
+msgstr "Geslacht"
+
+#: ../../Zotlabs/Module/Profiles.php:458
+msgid "Sexual Preference"
+msgstr "Seksuele voorkeur"
+
+#: ../../Zotlabs/Module/Profiles.php:462
+msgid "Homepage"
+msgstr "Homepage"
+
+#: ../../Zotlabs/Module/Profiles.php:466
+msgid "Interests"
+msgstr "Interesses"
+
+#: ../../Zotlabs/Module/Profiles.php:560
+msgid "Profile updated."
+msgstr "Profiel bijgewerkt"
+
+#: ../../Zotlabs/Module/Profiles.php:644
+msgid "Hide your connections list from viewers of this profile"
+msgstr "Laat de lijst met connecties niet aan bezoekers van dit profiel zien."
+
+#: ../../Zotlabs/Module/Profiles.php:686
+msgid "Edit Profile Details"
+msgstr "Profiel bewerken"
+
+#: ../../Zotlabs/Module/Profiles.php:688
+msgid "View this profile"
+msgstr "Profiel weergeven"
+
+#: ../../Zotlabs/Module/Profiles.php:689 ../../Zotlabs/Module/Profiles.php:771
+#: ../../include/channel.php:981
+msgid "Edit visibility"
+msgstr "Zichtbaarheid bewerken"
+
+#: ../../Zotlabs/Module/Profiles.php:690
+msgid "Profile Tools"
+msgstr "Hulpmiddelen"
 
 #: ../../Zotlabs/Module/Locs.php:62
 msgid "Location lookup failed."
@@ -6104,9 +6365,9 @@ msgstr "Inhoud voor volwassenen"
 
 #: ../../Zotlabs/Module/Settings/Channel.php:464
 msgid ""
-"Channel removals are not allowed within 48 hours of changing the account "
-"password."
-msgstr "Het verwijderen van een kanaal is niet toegestaan binnen 48 uur nadat het wachtwoord van het account is veranderd."
+"This channel frequently or regularly publishes adult content. (Please tag "
+"any adult material and/or nudity with #NSFW)"
+msgstr "Dit kanaal publiceert regelmatig of vaak materiaal dat alleen geschikt is voor volwassenen. (Gebruik de tag #NSFW in berichten met een seksueel getinte inhoud of ander voor minderjarigen ongeschikt materiaal)"
 
 #: ../../Zotlabs/Module/Settings/Channel.php:466
 msgid "Security and Privacy Settings"
@@ -6135,10 +6396,9 @@ msgstr "Zeer openbaar <em>(kanaal staat volledig open - moet met grote zorgvuldi
 
 #: ../../Zotlabs/Module/Settings/Channel.php:475
 msgid ""
-"Export your basic channel information to a file.  This acts as a backup of "
-"your connections, permissions, profile and basic data, which can be used to "
-"import your data to a new server hub, but does not contain your content."
-msgstr "Exporteer de basisinformatie van jouw kanaal naar een bestand. Dit fungeert als een back-up van jouw connecties, permissies, profiel en basisgegevens, die gebruikt kan worden om op een nieuwe hub jouw gegevens te importeren. Deze back-up bevat echter niet de inhoud van jouw kanaal."
+"Typical - <em>default public, privacy when desired (similar to social "
+"network permissions but with improved privacy)</em>"
+msgstr "Normaal <em>(standaard openbaar, maar privacy wanneer noodzakelijk - vergelijkbaar met die van sociale netwerken, maar met verbeterde privacy)</em>"
 
 #: ../../Zotlabs/Module/Settings/Channel.php:476
 msgid "Private - <em>default private, never open or public</em>"
@@ -6171,11 +6431,8 @@ msgstr "0 of leeg om het standaard aantal dagen van deze hub te gebruiken."
 
 #: ../../Zotlabs/Module/Settings/Channel.php:483
 #, php-format
-msgid ""
-"These content files may be imported or restored by visiting <a "
-"href=\"%1$s\">%2$s</a> on any site containing your channel. For best results"
-" please import or restore these in date order (oldest first)."
-msgstr "Deze back-up-bestanden kunnen geïmporteerd of hersteld worden door op jouw hub en met jouw kanaal <a href=\"%1$s\">%2$s</a> te bezoeken. Voor het beste resultaat kan je de bestanden in chronologische volgorde importeren of herstellen."
+msgid "This website expires after %d days."
+msgstr "Deze hub laat de inhoud van andere kanalen na %d dagen verlopen."
 
 #: ../../Zotlabs/Module/Settings/Channel.php:483
 msgid "This website does not expire imported content."

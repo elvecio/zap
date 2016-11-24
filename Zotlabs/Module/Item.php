@@ -156,13 +156,13 @@ class Item extends \Zotlabs\Web\Controller {
 				$obj_type = ACTIVITY_OBJ_COMMENT;
 	
 			if($parent) {
-				$r = q("SELECT * FROM `item` WHERE `id` = %d LIMIT 1",
+				$r = q("SELECT * FROM item WHERE id = %d LIMIT 1",
 					intval($parent)
 				);
 			}
 			elseif($parent_mid && $uid) {
 				// This is coming from an API source, and we are logged in
-				$r = q("SELECT * FROM `item` WHERE `mid` = '%s' AND `uid` = %d LIMIT 1",
+				$r = q("SELECT * FROM item WHERE mid = '%s' AND uid = %d LIMIT 1",
 					dbesc($parent_mid),
 					intval($uid)
 				);
@@ -172,7 +172,7 @@ class Item extends \Zotlabs\Web\Controller {
 				$parid = $r[0]['parent'];
 				$parent_mid = $r[0]['mid'];
 				if($r[0]['id'] != $r[0]['parent']) {
-					$r = q("SELECT * FROM `item` WHERE `id` = `parent` AND `parent` = %d LIMIT 1",
+					$r = q("SELECT * FROM item WHERE id = parent AND parent = %d LIMIT 1",
 						intval($parid)
 					);
 				}
@@ -246,7 +246,7 @@ class Item extends \Zotlabs\Web\Controller {
 		$iconfig = null;
 	
 		if($post_id) {
-			$i = q("SELECT * FROM `item` WHERE `uid` = %d AND `id` = %d LIMIT 1",
+			$i = q("SELECT * FROM item WHERE uid = %d AND id = %d LIMIT 1",
 				intval($profile_uid),
 				intval($post_id)
 			);
@@ -508,7 +508,7 @@ class Item extends \Zotlabs\Web\Controller {
 	//			$body = escape_tags(trim($body));
 	//			$body = str_replace("\n",'<br />', $body);
 	//			$body = preg_replace_callback('/\[share(.*?)\]/ism','\share_shield',$body);			
-	//			$body = diaspora2bb($body,true);
+	//			$body = markdown_to_bb($body,true);
 	//			$body = preg_replace_callback('/\[share(.*?)\]/ism','\share_unshield',$body);
 	//		}
 	
@@ -901,6 +901,8 @@ class Item extends \Zotlabs\Web\Controller {
 	
 			$x = item_store_update($datarray,$execflag);
 			
+			item_create_edit_activity($x);			
+
 			if(! $parent) {
 				$r = q("select * from item where id = %d",
 					intval($post_id)

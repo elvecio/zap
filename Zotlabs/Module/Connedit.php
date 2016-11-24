@@ -96,7 +96,7 @@ class Connedit extends \Zotlabs\Web\Controller {
 	
 		$profile_id = $_POST['profile_assign'];
 		if($profile_id) {
-			$r = q("SELECT profile_guid FROM profile WHERE profile_guid = '%s' AND `uid` = %d LIMIT 1",
+			$r = q("SELECT profile_guid FROM profile WHERE profile_guid = '%s' AND uid = %d LIMIT 1",
 				dbesc($profile_id),
 				intval(local_channel())
 			);
@@ -448,7 +448,7 @@ class Connedit extends \Zotlabs\Web\Controller {
 	
 			}
 			if($cmd === 'resetphoto') {
-				q("update xchan set xchan_photo_date = '2001-01-01 00:00:00' where xchan_hash = '%s' limit 1",
+				q("update xchan set xchan_photo_date = '2001-01-01 00:00:00' where xchan_hash = '%s'",
 					dbesc($orig_record[0]['xchan_hash'])
 				);
 				$cmd = 'refresh';
@@ -521,11 +521,12 @@ class Connedit extends \Zotlabs\Web\Controller {
 			if($cmd === 'drop') {
 	
 	
-	// FIXME
-	// We need to send either a purge or a refresh packet to the other side (the channel being unfriended).
-	// The issue is that the abook DB record _may_ get destroyed when we call contact_remove. As the notifier runs
-	// in the background there could be a race condition preventing this packet from being sent in all cases.
-	// PLACEHOLDER
+				// @FIXME
+				// We need to send either a purge or a refresh packet to the other side (the channel being unfriended).
+				// The issue is that the abook DB record _may_ get destroyed when we call contact_remove. As the notifier
+				// runs in the background there could be a race condition preventing this packet from being sent in all
+				// cases.
+				// PLACEHOLDER
 	
 				contact_remove(local_channel(), $orig_record[0]['abook_id']);
 				build_sync_packet(0 /* use the current local_channel */,
@@ -800,9 +801,6 @@ class Connedit extends \Zotlabs\Web\Controller {
 	
 			return $arr['output'];
 	
-		}
-	
-	
+		}	
 	}
-	
 }

@@ -19,7 +19,9 @@
 
 {{include file="field_input.tpl" field=$adminmail}}
 {{include file="field_input.tpl" field=$siteurl}}
-{{include file="field_select.tpl" field=$server_role}}
+
+{{*include file="field_select.tpl" field=$server_role*}}
+<input type="hidden" name="server_role" value="pro" />
 
 {{include file="field_select_grouped.tpl" field=$timezone}}
 

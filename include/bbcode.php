@@ -403,6 +403,15 @@ function bb_definitionList_unescapeBraces($match) {
 	return '<dt>' . str_replace('\]', ']', $match[1]) . '</dt>';
 }
 
+
+function bb_checklist($match) {
+	$str = $match[1];
+	$str = str_replace("[]", "<li><input type=\"checkbox\" disabled=\"disabled\">", $str);
+	$str = str_replace("[x]", "<li><input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\">", $str);
+	return '<ul class="checklist" style="list-style-type: none;">' . $str . '</ul>';
+}
+
+
 /**
  * @brief Sanitize style properties from BBCode to HTML.
  *
@@ -549,7 +558,6 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 
 	// process [observer] tags before we do anything else because we might
 	// be stripping away stuff that then doesn't need to be worked on anymore
-
 
 	if($cache)
 		$observer = false;
@@ -784,15 +792,15 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 		$Text = preg_replace("(\[footer\](.*?)\[\/footer\])ism", "<div class=\"wall-item-footer\">$1</div>", $Text);
 	}
 	// Check for list text
+
+	$Text = preg_replace("/<br \/>\[\*\]/ism",'[*]',$Text);
+
 	$Text = str_replace("[*]", "<li>", $Text);
-	$Text = str_replace("[]", "<li><input type=\"checkbox\" disabled=\"disabled\">", $Text);
-	$Text = str_replace("[x]", "<li><input type=\"checkbox\" checked=\"checked\" disabled=\"disabled\">", $Text);
 
  	// handle nested lists
 	$endlessloop = 0;
 
 	while ((((strpos($Text, "[/list]") !== false) && (strpos($Text, "[list") !== false)) ||
-			((strpos($Text, "[/checklist]") !== false) && (strpos($Text, "[checklist]") !== false)) ||
 			((strpos($Text, "[/ol]") !== false) && (strpos($Text, "[ol]") !== false)) ||
 			((strpos($Text, "[/ul]") !== false) && (strpos($Text, "[ul]") !== false)) ||
 			((strpos($Text, "[/dl]") !== false) && (strpos($Text, "[dl")  !== false)) ||
@@ -804,9 +812,9 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 		$Text = preg_replace("/\[list=((?-i)I)\](.*?)\[\/list\]/ism", '<ul class="listupperroman" style="list-style-type: upper-roman;">$2</ul>', $Text);
 		$Text = preg_replace("/\[list=((?-i)a)\](.*?)\[\/list\]/ism", '<ul class="listloweralpha" style="list-style-type: lower-alpha;">$2</ul>', $Text);
 		$Text = preg_replace("/\[list=((?-i)A)\](.*?)\[\/list\]/ism", '<ul class="listupperalpha" style="list-style-type: upper-alpha;">$2</ul>', $Text);
-		$Text = preg_replace("/\[checklist\](.*?)\[\/checklist\]/ism", '<ul class="checklist" style="list-style-type: none;">$1</ul>', $Text);
 		$Text = preg_replace("/\[ul\](.*?)\[\/ul\]/ism", '<ul class="listbullet" style="list-style-type: circle;">$1</ul>', $Text);
 		$Text = preg_replace("/\[ol\](.*?)\[\/ol\]/ism", '<ul class="listdecimal" style="list-style-type: decimal;">$1</ul>', $Text);
+		$Text = preg_replace("/\[\/li\]<br \/>\[li\]/ism",'[/li][li]',$Text);
 		$Text = preg_replace("/\[li\](.*?)\[\/li\]/ism", '<li>$1</li>', $Text);
 
 		// [dl] tags have an optional [dl terms="bi"] form where bold/italic/underline/mono/large
@@ -815,7 +823,13 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 		//   "[dl" <optional-whitespace> <optional-termStyles> "]" <matchGroup2> "[/dl]"
 		// where optional-termStyles are: "terms=" <optional-quote> <matchGroup1> <optional-quote>
 		$Text = preg_replace_callback('/\[dl[[:space:]]*(?:terms=(?:&quot;|")?([a-zA-Z]+)(?:&quot;|")?)?\](.*?)\[\/dl\]/ism', 'bb_definitionList', $Text);
+
 	}
+
+	if (strpos($Text,'[checklist]') !== false) {
+		$Text = preg_replace_callback("/\[checklist\](.*?)\[\/checklist\]/ism", 'bb_checklist', $Text);
+	}
+
 	if (strpos($Text,'[th]') !== false) {
 		$Text = preg_replace("/\[th\](.*?)\[\/th\]/sm", '<th>$1</th>', $Text);
 	}
@@ -1024,7 +1038,7 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 	// Summary (e.g. title) is required, earlier revisions only required description (in addition to 
 	// start which is always required). Allow desc with a missing summary for compatibility.
 
-	if ((x($ev,'desc') || x($ev,'summary')) && x($ev,'start')) {
+	if ((x($ev,'desc') || x($ev,'summary')) && x($ev,'dtstart')) {
 
 		$sub = format_event_html($ev);
 

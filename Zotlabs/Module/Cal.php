@@ -109,7 +109,7 @@ class Cal extends \Zotlabs\Web\Controller {
 	
 			/* edit/create form */
 			if($event_id) {
-				$r = q("SELECT * FROM `event` WHERE event_hash = '%s' AND `uid` = %d LIMIT 1",
+				$r = q("SELECT * FROM event WHERE event_hash = '%s' AND uid = %d LIMIT 1",
 					dbesc($event_id),
 					intval($channel['channel_id'])
 				);
@@ -209,6 +209,10 @@ class Cal extends \Zotlabs\Web\Controller {
 			$adjust_start = datetime_convert('UTC', date_default_timezone_get(), $start);
 			$adjust_finish = datetime_convert('UTC', date_default_timezone_get(), $finish);
 	
+
+			if(! perm_is_allowed(\App::$profile['uid'],get_observer_hash(),'view_contacts'))
+				$sql_extra .= " and etype != 'birthday' ";
+
 			if (x($_GET,'id')){
 			  	$r = q("SELECT event.*, item.plink, item.item_flags, item.author_xchan, item.owner_xchan
 	                                from event left join item on resource_id = event_hash where resource_type = 'event' and event.uid = %d and event.id = %d $sql_extra limit 1",
@@ -224,7 +228,7 @@ class Cal extends \Zotlabs\Web\Controller {
 	
 				$r = q("SELECT event.*, item.plink, item.item_flags, item.author_xchan, item.owner_xchan
 	                              from event left join item on event_hash = resource_id 
-					where resource_type = 'event' and event.uid = %d $ignored 
+					where resource_type = 'event' and event.uid = %d and event.uid = item.uid $ignored 
 					AND (( adjust = 0 AND ( dtend >= '%s' or nofinish = 1 ) AND dtstart <= '%s' ) 
 					OR  (  adjust = 1 AND ( dtend >= '%s' or nofinish = 1 ) AND dtstart <= '%s' )) $sql_extra ",
 					intval($channel['channel_id']),
