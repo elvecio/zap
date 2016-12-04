@@ -57,21 +57,25 @@ function AES256CBC_decrypt($data,$key,$iv) {
 
 function AES128CBC_encrypt($data,$key,$iv) {
 	$key = substr($key,0,16);
+	$iv = substr($iv,0,16);
 	return openssl_encrypt($data,'aes-128-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
 }
 
 function AES128CBC_decrypt($data,$key,$iv) {
 	$key = substr($key,0,16);
+	$iv = substr($iv,0,16);
 	return openssl_decrypt($data,'aes-128-cbc',str_pad($key,16,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
 }
 
 function STD_encrypt($data,$key,$iv) {
 	$key = substr($key,0,32);
+	$iv = substr($iv,0,16);
 	return openssl_encrypt($data,'aes-256-cbc',str_pad($key,32,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
 }
 
 function STD_decrypt($data,$key,$iv) {
 	$key = substr($key,0,32);
+	$iv = substr($iv,0,16);
 	return openssl_decrypt($data,'aes-256-cbc',str_pad($key,32,"\0"),OPENSSL_RAW_DATA,str_pad($iv,16,"\0"));
 }
 
@@ -137,6 +141,9 @@ function other_encapsulate($data,$pubkey,$alg) {
 }
 
 function crypto_methods() {
+
+	if(\Zotlabs\Lib\System::get_server_role() !== 'pro')
+		return [ 'aes256cbc' ];
 
 	// 'std' is the new project standard which is aes256cbc but transmits/receives 256-byte key and iv. 
 	// aes256cbc is provided for compatibility with earlier zot implementations which assume 32-byte key and 16-byte iv. 
