@@ -42,6 +42,20 @@ class System {
 	}
 
 
+	static public function get_project_link() {
+		if(is_array(\App::$config) && is_array(\App::$config['system']) && \App::$config['system']['project_link'])
+			return \App::$config['system']['project_link'];
+		return 'https://macgirvin.com';
+	}
+
+	static public function get_project_srclink() {
+		if(is_array(\App::$config) && is_array(\App::$config['system']) && \App::$config['system']['project_srclink'])
+			return \App::$config['system']['project_srclink'];
+		return 'https://github.com/zotlabs/zap';
+	}
+
+
+
 	static public function get_server_role() {
 		if(is_array(\App::$config) && is_array(\App::$config['system']) && \App::$config['system']['server_role'])
 			return \App::$config['system']['server_role'];
@@ -55,6 +69,10 @@ class System {
 	}
 
 	static public function compatible_project($p) {
+
+		if(get_directory_realm() != DIRECTORY_REALM)
+			return true;
+
 		foreach(['hubzilla','zap'] as $t) {
 			if(stristr($p,$t))
 				return true;

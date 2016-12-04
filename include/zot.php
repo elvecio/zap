@@ -161,10 +161,13 @@ function zot_build_packet($channel, $type = 'notify', $recipients = null, $remot
  * @param string $methods
  *   comma separated list of encryption methods
  * @return string first match from our site method preferences crypto_methods() array
- * (which is common to both sites) or 'aes256cbc' if no matches are found.
+ * of a method which is common to both sites; or 'aes256cbc' if no matches are found.
  */
 
 function zot_best_algorithm($methods) {
+
+	if(\Zotlabs\Lib\System::get_server_role() !== 'pro')
+		return 'aes256cbc';
 
 	if($methods) {
 		$x = explode(',',$methods);
@@ -182,7 +185,6 @@ function zot_best_algorithm($methods) {
 	}
 
 	return 'aes256cbc';
-
 }
 
 
@@ -201,104 +203,10 @@ function zot_zot($url, $data) {
 }
 
 /**
- * @brief Look up information about channel.
- *
- * @param string $webbie
- *   does not have to be host qualified e.g. 'foo' is treated as 'foo\@thishub'
- * @param array $channel
- *   (optional), if supplied permissions will be enumerated specifically for $channel
- * @param boolean $autofallback
- *   fallback/failover to http if https connection cannot be established. Default is true.
- *
- * @return array see z_post_url() and \ref Zotlabs::Zot::Finger "\\Zotlabs\\Zot\\Finger"
- */
-function zot_finger($webbie, $channel = null, $autofallback = true) {
-
-	if (strpos($webbie,'@') === false) {
-		$address = $webbie;
-		$host = App::get_hostname();
-	}
-	else {
-		$address = substr($webbie,0,strpos($webbie,'@'));
-		$host = substr($webbie,strpos($webbie,'@')+1);
-		if(strpos($host,'/'))
-			$host = substr($host,0,strpos($host,'/'));
-	}
-
-	$xchan_addr = $address . '@' . $host;
-
-	if ((! $address) || (! $xchan_addr)) {
-		logger('zot_finger: no address :' . $webbie);
-		return [ 'success' => false ];
-	}
-	logger('using xchan_addr: ' . $xchan_addr, LOGGER_DATA, LOG_DEBUG);
-
-	// potential issue here; the xchan_addr points to the primary hub.
-	// The webbie we were called with may not, so it might not be found
-	// unless we query for hubloc_addr instead of xchan_addr
-
-	$r = q("select xchan.*, hubloc.* from xchan
-			left join hubloc on xchan_hash = hubloc_hash
-			where xchan_addr = '%s' and hubloc_primary = 1 limit 1",
-		dbesc($xchan_addr)
-	);
-
-	if ($r) {
-		$url = $r[0]['hubloc_url'];
-
-		if ($r[0]['hubloc_network'] && $r[0]['hubloc_network'] !== 'zot') {
-			logger('zot_finger: alternate network: ' . $webbie);
-			logger('url: '.$url.', net: '.var_export($r[0]['hubloc_network'],true), LOGGER_DATA, LOG_DEBUG);
-			return array('success' => false);
-		}
-	}
-	else {
-		$url = 'https://' . $host;
-	}
-
-	$rhs = '/.well-known/zot-info';
-	$https = ((strpos($url,'https://') === 0) ? true : false);
-
-	logger('zot_finger: ' . $address . ' at ' . $url, LOGGER_DEBUG);
-
-	if ($channel) {
-		$postvars = [
-			'address'    => $address,
-			'target'     => $channel['channel_guid'],
-			'target_sig' => $channel['channel_guid_sig'],
-			'key'        => $channel['channel_pubkey']
-		];
-
-		$result = z_post_url($url . $rhs,$postvars);
-
-		if ((! $result['success']) && ($autofallback)) {
-			if ($https) {
-				logger('zot_finger: https failed. falling back to http');
-				$result = z_post_url('http://' . $host . $rhs,$postvars);
-			}
-		}
-	}
-	else {
-
-		$rhs .= '?f=&address=' . urlencode($address);
-
-		$result =  z_fetch_url($url . $rhs);
-		if ((! $result['success']) && ($autofallback)) {
-			if ($https) {
-				logger('zot_finger: https failed. falling back to http');
-				$result = z_fetch_url('http://' . $host . $rhs);
-			}
-		}
-	}
-
-	if (! $result['success'])
-		logger('zot_finger: no results');
-
-	return $result;
-}
-
-/**
  * @brief Refreshes after permission changed or friending, etc.
+ *
+ * The top half of this function is similar to \Zotlabs\Zot\Finger::run() and could potentially be
+ * consolidated.
  *
  * zot_refresh is typically invoked when somebody has changed permissions of a channel and they are notified
  * to fetch new permissions via a finger/discovery operation. This may result in a new connection
@@ -321,6 +229,7 @@ function zot_finger($webbie, $channel = null, $autofallback = true) {
  *
  * @returns boolean true if successful, else false
  */
+
 function zot_refresh($them, $channel = null, $force = false) {
 
 	if (array_key_exists('xchan_network', $them) && ($them['xchan_network'] !== 'zot')) {
@@ -466,6 +375,10 @@ function zot_refresh($them, $channel = null, $force = false) {
 				$next_birthday = NULL_DATE;
 			}
 
+
+			// Keep original perms to check if we need to notify them
+			$previous_perms = get_all_perms($channel['channel_id'],$x['hash']);
+
 			$r = q("select * from abook where abook_xchan = '%s' and abook_channel = %d and abook_self = 0 limit 1",
 				dbesc($x['hash']),
 				intval($channel['channel_id'])
@@ -528,10 +441,6 @@ function zot_refresh($them, $channel = null, $force = false) {
 						set_abconfig($channel['channel_id'],$x['hash'],'my_perms',$k,$v);
 					}
 				}
-
-				// Keep original perms to check if we need to notify them
-				$previous_perms = get_all_perms($channel['channel_id'],$x['hash']);
-
 
 				$closeness = get_pconfig($channel['channel_id'],'system','new_abook_closeness');
 				if($closeness === false)
@@ -3742,7 +3651,7 @@ function zot_reply_message_request($data) {
 	if ($messages) {
 		$env_recips = null;
 
-		$r = q("select hubloc.*, site.site_crypto from hubloc left join site on hulob_url = site_url where hubloc_hash = '%s' and hubloc_error = 0 and hubloc_deleted = 0",
+		$r = q("select hubloc.*, site.site_crypto from hubloc left join site on hubloc_url = site_url where hubloc_hash = '%s' and hubloc_error = 0 and hubloc_deleted = 0",
 			dbesc($sender_hash)
 		);
 		if (! $r) {

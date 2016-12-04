@@ -22,16 +22,18 @@ class Finger {
 	 *
 	 * @return zotinfo array (with 'success' => true) or array('success' => false);
 	 */
+
 	static public function run($webbie, $channel = null, $autofallback = true) {
 
 		$ret = array('success' => false);
 
 		self::$token = random_string();
 
-		if (strpos($webbie, '@') === false) {
+		if(strpos($webbie, '@') === false) {
 			$address = $webbie;
 			$host = \App::get_hostname();
-		} else {
+		}
+		else {
 			$address = substr($webbie,0,strpos($webbie,'@'));
 			$host = substr($webbie,strpos($webbie,'@')+1);
 			if(strpos($host,'/'))
@@ -40,7 +42,7 @@ class Finger {
 
 		$xchan_addr = $address . '@' . $host;
 
-		if ((! $address) || (! $xchan_addr)) {
+		if((! $address) || (! $xchan_addr)) {
 			logger('zot_finger: no address :' . $webbie);
 
 			return $ret;
@@ -66,7 +68,8 @@ class Finger {
 				logger('url: ' . $url . ', net: ' . var_export($r[0]['hubloc_network'],true), LOGGER_DATA, LOG_DEBUG);
 				return $ret;
 			}
-		} else {
+		}
+		else {
 			$url = 'https://' . $host;
 		}
 
@@ -75,7 +78,7 @@ class Finger {
 
 		logger('zot_finger: ' . $address . ' at ' . $url, LOGGER_DEBUG);
 
-		if ($channel) {
+		if($channel) {
 			$postvars = array(
 				'address'    => $address,
 				'target'     => $channel['channel_guid'],
@@ -86,13 +89,14 @@ class Finger {
 
 			$result = z_post_url($url . $rhs,$postvars);
 
-			if ((! $result['success']) && ($autofallback)) {
-				if ($https) {
+			if((! $result['success']) && ($autofallback)) {
+				if($https) {
 					logger('zot_finger: https failed. falling back to http');
 					$result = z_post_url('http://' . $host . $rhs,$postvars);
 				}
 			}
-		} else {
+		} 
+		else {
 			$rhs .= '?f=&address=' . urlencode($address) . '&token=' . self::$token;
 
 			$result =  z_fetch_url($url . $rhs);
@@ -106,7 +110,6 @@ class Finger {
 
 		if(! $result['success']) {
 			logger('zot_finger: no results');
-
 			return $ret;
 		}
 

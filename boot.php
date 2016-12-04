@@ -63,7 +63,6 @@ define ( 'DB_UPDATE_VERSION',       1185  );
  */
 define ( 'EOL',                    '<br>' . "\r\n"        );
 define ( 'ATOM_TIME',              'Y-m-d\TH:i:s\Z'       );
-//define ( 'NULL_DATE',              '0000-00-00 00:00:00'  );
 define ( 'TEMPLATE_BUILD_PATH',    'store/[data]/smarty3' );
 
 define ( 'DIRECTORY_MODE_NORMAL',      0x0000); // A directory client
@@ -84,8 +83,7 @@ $DIRECTORY_FALLBACK_SERVERS = array(
 	'https://hubzilla.zottel.net',
 	'https://hub.pixelbits.de',
 	'https://my.federated.social',
-	'https://hubzilla.nl',
-	'https://blablanet.es'
+	'https://hubzilla.nl'
 );
 
 
@@ -2446,6 +2444,11 @@ function cert_bad_email() {
 
 function check_for_new_perms() {
 
+	// Do not execute if we are in the middle of a git update and the relevant versions don't match
+
+	if( \Zotlabs\Access\Permissions::version() != \Zotlabs\Access\PermissionRoles::version())
+		return;
+
 	$pregistered = get_config('system','perms');
 	$pcurrent = array_keys(\Zotlabs\Access\Permissions::Perms());
 
@@ -2475,19 +2478,27 @@ function check_for_new_perms() {
 						// get the permissions role details
 						$rp = \Zotlabs\Access\PermissionRoles::role_perms($r[0]['v']);
 						if($rp) {
-							// set the channel limits if appropriate or 0
-							if(array_key_exists('limits',$rp) && array_key_exists($p,$rp['limits'])) {
-								\Zotlabs\Access\PermissionLimits::Set($cc['uid'],$p,$rp['limits'][$p]);
+
+							// for custom permission roles we need to customise how we initiate this new permission
+							if(array_key_exists('role',$rp) && ($rp['role'] === 'custom' || $rp['role'] === '')) {
+								\Zotlabs\Access\PermissionRoles::new_custom_perms($cc['uid'],$p,$x);
 							}
 							else {
-								\Zotlabs\Access\PermissionLimits::Set($cc['uid'],$p,0);
-							}
+								// set the channel limits if appropriate or 0
+								if(array_key_exists('limits',$rp) && array_key_exists($p,$rp['limits'])) {
+									\Zotlabs\Access\PermissionLimits::Set($cc['uid'],$p,$rp['limits'][$p]);
+								}
+								else {
+									\Zotlabs\Access\PermissionLimits::Set($cc['uid'],$p,0);
+								}
 
-							$set = ((array_key_exists('perms_connect',$rp) && array_key_exists($p,$rp['perms_connect'])) ? true : false);
-							// foreach connection set to the perms_connect value
-							if($x) {
-								foreach($x as $xx) {
-									set_abconfig($cc['uid'],$xx['abook_xchan'],'my_perms',$p,intval($set));
+
+								$set = ((array_key_exists('perms_connect',$rp) && array_key_exists($p,$rp['perms_connect'])) ? true : false);
+								// foreach connection set to the perms_connect value
+								if($x) {
+									foreach($x as $xx) {
+										set_abconfig($cc['uid'],$xx['abook_xchan'],'my_perms',$p,intval($set));
+									}
 								}
 							}
 						}

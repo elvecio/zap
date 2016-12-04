@@ -41,11 +41,13 @@ class Connedit extends \Zotlabs\Web\Controller {
 			}
 		}
 	
+
 		$channel = \App::get_channel();
 		if($channel)
 			head_set_icon($channel['xchan_photo_s']);
 	
 	}
+
 	
 	/* @brief Evaluate posted values and set changes
 	 *
@@ -396,6 +398,7 @@ class Connedit extends \Zotlabs\Web\Controller {
 			return login();
 		}
 	
+		$section = ((array_key_exists('section',$_REQUEST)) ? $_REQUEST['section'] : '');
 		$channel = \App::get_channel();
 		$my_perms = get_channel_default_perms(local_channel());
 		$role = get_pconfig(local_channel(),'system','permissions_role');
@@ -546,9 +549,33 @@ class Connedit extends \Zotlabs\Web\Controller {
 	
 		if(\App::$poi) {
 	
+			$abook_prev = 0;
+			$abook_next = 0;
+
 			$contact_id = \App::$poi['abook_id'];
 			$contact = \App::$poi;
-	
+
+			$cn = q("SELECT abook_id, xchan_name from abook left join xchan on abook_xchan = xchan_hash where abook_channel = %d and abook_self = 0 order by xchan_name",
+				intval(local_channel())
+			);
+
+			if($cn) {
+				$pntotal = count($cn);
+
+				for($x = 0; $x < $pntotal; $x ++) {
+					if($cn[$x]['abook_id'] == $contact_id) {
+						if($x === 0)
+							$abook_prev = 0;
+						else
+							$abook_prev = $cn[$x - 1]['abook_id'];
+						if($x === $pntotal)
+							$abook_next = 0;
+						else
+							$abook_next = $cn[$x +1]['abook_id'];
+					}
+				}
+ 			}
+
 			$tools = array(
 	
 				'view' => array(
@@ -615,8 +642,10 @@ class Connedit extends \Zotlabs\Web\Controller {
 	
 			$self = false;
 	
-			if(intval($contact['abook_self']))
+			if(intval($contact['abook_self'])) {
 				$self = true;
+				$abook_prev = $abook_next = 0;
+			}
 	
 			$tpl = get_markup_template("abook_edit.tpl");
 	
@@ -751,6 +780,7 @@ class Connedit extends \Zotlabs\Web\Controller {
 				'$header'         => (($self) ? t('Connection Default Permissions') : sprintf( t('Connection: %s'),$contact['xchan_name'])),
 				'$autoperms'      => array('autoperms',t('Apply these permissions automatically'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), t('Connection requests will be approved without your interaction'), $yes_no),
 				'$addr'           => $contact['xchan_addr'],
+				'$section'        => $section,
 				'$addr_text'      => t('This connection\'s primary address is'),
 				'$loc_text'       => t('Available locations:'),
 				'$locstr'         => $locstr,
@@ -792,7 +822,8 @@ class Connedit extends \Zotlabs\Web\Controller {
 				'$multiprofs'     => $multiprofs,
 				'$contact_id'     => $contact['abook_id'],
 				'$name'           => $contact['xchan_name'],
-	
+				'$abook_prev'     => $abook_prev,
+				'$abook_next'     => $abook_next	
 			));
 	
 			$arr = array('contact' => $contact,'output' => $o);

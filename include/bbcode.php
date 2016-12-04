@@ -512,10 +512,10 @@ function bb_code($match) {
 }
 
 function bb_highlight($match) {
-	if(in_array(strtolower($match[1]),['php','css','mysql','sql','abap','diff','html','perl','ruby',
+	$lang = ((in_array(strtolower($match[1]),['php','css','mysql','sql','abap','diff','html','perl','ruby',
 		'vbscript','avrc','dtd','java','xml','cpp','python','javascript','js','json','sh']))
-		return text_highlight($match[2],strtolower($match[1]));
-	return $match[0];
+		? strtolower($match[1]) : 'php' );
+	return text_highlight($match[2],$lang);
 }
 
 function bb_fixtable_lf($match) {
@@ -529,7 +529,49 @@ function bb_fixtable_lf($match) {
 
 }
 
+function parseIdentityAwareHTML($Text) {
+   
+	// process [observer] tags before we do anything else because we might
+	// be stripping away stuff that then doesn't need to be worked on anymore
 
+        $observer = App::get_observer();
+
+	if ((strpos($Text,'[/observer]') !== false) || (strpos($Text,'[/rpost]') !== false)) {
+		if ($observer) {
+			$Text = preg_replace("/\[observer\=1\](.*?)\[\/observer\]/ism", '$1', $Text);
+			$Text = preg_replace("/\[observer\=0\].*?\[\/observer\]/ism", '', $Text);
+			$Text = preg_replace_callback("/\[rpost(=(.*?))?\](.*?)\[\/rpost\]/ism", 'rpost_callback', $Text);
+		} else {
+			$Text = preg_replace("/\[observer\=1\].*?\[\/observer\]/ism", '', $Text);
+			$Text = preg_replace("/\[observer\=0\](.*?)\[\/observer\]/ism", '$1', $Text);
+			$Text = preg_replace("/\[rpost(=.*?)?\](.*?)\[\/rpost\]/ism", '', $Text);
+		}
+	} 
+	// replace [observer.baseurl]
+	if ($observer) {
+		$s1 = '<span class="bb_observer" title="' . t('Different viewers will see this text differently') . '">';
+		$s2 = '</span>';
+		$obsBaseURL = $observer['xchan_connurl'];
+		$obsBaseURL = preg_replace("/\/poco\/.*$/", '', $obsBaseURL);
+		$Text = str_replace('[observer.baseurl]', $obsBaseURL, $Text);
+		$Text = str_replace('[observer.url]',$observer['xchan_url'], $Text);
+		$Text = str_replace('[observer.name]',$s1 . $observer['xchan_name'] . $s2, $Text);
+		$Text = str_replace('[observer.address]',$s1 . $observer['xchan_addr'] . $s2, $Text);
+		$Text = str_replace('[observer.webname]', substr($observer['xchan_addr'],0,strpos($observer['xchan_addr'],'@')), $Text);
+		$Text = str_replace('[observer.photo]',$s1 . '[zmg]'.$observer['xchan_photo_l'].'[/zmg]' . $s2, $Text);
+	} else {
+		$Text = str_replace('[observer.baseurl]', '', $Text);
+		$Text = str_replace('[observer.url]','', $Text);
+		$Text = str_replace('[observer.name]','', $Text);
+		$Text = str_replace('[observer.address]','', $Text);
+		$Text = str_replace('[observer.webname]','',$Text);
+		$Text = str_replace('[observer.photo]','', $Text);
+	}
+        
+        $Text = str_replace(array('[baseurl]','[sitename]'),array(z_root(),get_config('system','sitename')),$Text);
+        
+        return $Text;
+}
 
 	// BBcode 2 HTML was written by WAY2WEB.net
 	// extended to work with Mistpark/Friendica/Redmatrix/Hubzilla - Mike Macgirvin
@@ -661,7 +703,7 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 
 	// Perform URL Search
 
-	$urlchars = '[a-zA-Z0-9\:\/\-\?\&\;\.\=\@\_\~\#\%\$\!\+\,\@]';
+	$urlchars = '[a-zA-Z0-9\:\/\-\?\&\;\.\=\@\_\~\#\%\$\!\+\,\@\(\)]';
 
 	if (strpos($Text,'http') !== false) {
 		if($tryoembed) {
@@ -745,6 +787,12 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 	if (strpos($Text,'[/color]') !== false) {
 		$Text = preg_replace("(\[color=(.*?)\](.*?)\[\/color\])ism", "<span style=\"color: $1;\">$2</span>", $Text);
 	}
+	// Check for colored text
+	if (strpos($Text,'[/hl]') !== false) {
+		$Text = preg_replace("(\[hl\](.*?)\[\/hl\])ism", "<span style=\"background-color: yellow;\">$1</span>", $Text);
+		$Text = preg_replace("(\[hl=(.*?)\](.*?)\[\/hl\])ism", "<span style=\"background-color: $1;\">$2</span>", $Text);
+	}
+
 	// Check for sized text
 	// [size=50] --> font-size: 50px (with the unit).
 	if (strpos($Text,'[/size]') !== false) {

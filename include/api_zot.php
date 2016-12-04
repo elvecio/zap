@@ -28,8 +28,8 @@
 		api_register_func('api/z/1.0/group','api_group', true);
 		api_register_func('api/red/xchan','api_red_xchan',true);
 		api_register_func('api/z/1.0/xchan','api_red_xchan',true);
-		api_register_func('api/red/item/new','red_item_new', true);
-		api_register_func('api/z/1.0/item/new','red_item_new', true);
+		api_register_func('api/red/item/update','zot_item_update', true);
+		api_register_func('api/z/1.0/item/update','zot_item_update', true);
 		api_register_func('api/red/item/full','red_item', true);
 		api_register_func('api/z/1.0/item/full','red_item', true);
 
@@ -266,7 +266,7 @@
 		require_once('include/hubloc.php');
 
 		if($_SERVER['REQUEST_METHOD'] === 'POST') {
-			$r = xchan_store($_REQUEST);
+			// $r = xchan_store($_REQUEST);
 		}
 		$r = xchan_fetch($_REQUEST);
 		json_return_and_die($r);
@@ -341,15 +341,15 @@
 
 	}
 
-	function red_item_new($type) {
+	function zot_item_update($type) {
 
 		if (api_user() === false) {
-			logger('api_red_item_new: no user');
+			logger('api_red_item_store: no user');
 			return false;
 		}
 
-		logger('api_red_item_new: REQUEST ' . print_r($_REQUEST,true));
-		logger('api_red_item_new: FILES ' . print_r($_FILES,true));
+		logger('api_red_item_store: REQUEST ' . print_r($_REQUEST,true));
+		logger('api_red_item_store: FILES ' . print_r($_FILES,true));
 
 
 		// set this so that the item_post() function is quiet and doesn't redirect or emit json
@@ -360,11 +360,10 @@
 		if(x($_FILES,'media')) {
 			$_FILES['userfile'] = $_FILES['media'];
 			// upload the image if we have one
-			$_REQUEST['silent']='1'; //tell wall_upload function to return img info instead of echo
-			$mod = new Zotlabs\Module\Wall_upload();
+			$mod = new Zotlabs\Module\Wall_attach();
 			$media = $mod->post();
-			if(strlen($media)>0)
-				$_REQUEST['body'] .= "\n\n".$media;
+			if($media)
+				$_REQUEST['body'] .= "\n\n" . $media;
 		}
 
 		$mod = new Zotlabs\Module\Item();
