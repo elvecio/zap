@@ -18,8 +18,8 @@
 				</ul>
 			</div>	
 			{{/if}}
-			<button id="fullscreen-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen();"><i class="fa fa-expand"></i></button>
-			<button id="inline-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen(false);"><i class="fa fa-compress"></i></button>
+			<button id="fullscreen-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen(); adjustFullscreenEditorHeight();"><i class="fa fa-expand"></i></button>
+			<button id="inline-btn" type="button" class="btn btn-default btn-xs" onclick="makeFullScreen(false); adjustInlineEditorHeight()"><i class="fa fa-compress"></i></button>
 		</div>
 		<h2>
 			<span id="wiki-header-name">{{$wikiheaderName}}</span>:
@@ -41,7 +41,7 @@
 			</div>
 		</form>
 	</div>
-	<div id="wiki-content-container" class="section-content-wrapper" {{if $hideEditor}}style="display: none;"{{/if}}>
+	<div id="wiki-content-container" class="section-content-wrapper">
 		<ul class="nav nav-tabs" id="wiki-nav-tabs">
 			<li id="edit-pane-tab"><a data-toggle="tab" href="#edit-pane">{{$editOrSourceLabel}}</a></li>
 			<li class="active"><a data-toggle="tab" href="#preview-pane" id="wiki-get-preview">View</a></li>
@@ -52,15 +52,17 @@
 				{{if !$mimeType || $mimeType == 'text/markdown'}}
 				<div id="ace-editor"></div>
 				{{else}}
-				<textarea id="editor">{{$content}}</textarea>
+				<div id="editor-wrapper">
+					<textarea id="editor">{{$content}}</textarea>
+				</div>
 				{{/if}}
 				{{if $showPageControls}}
 				<div>
-					<div id="id_{{$commitMsg.0}}_wrapper" class="form-group field input">
+					<div id="id_{{$commitMsg.0}}_wrapper" class="field input">
 						<div class="input-group">
 							<input class="widget-input" name="{{$commitMsg.0}}" id="id_{{$commitMsg.0}}" type="text" value="{{$commitMsg.2}}"{{if $commitMsg.5}} {{$commitMsg.5}}{{/if}}>
 							<div class="input-group-btn">
-								<button id="save-page" type="button" class="btn btn-primary btn-sm{{if !$mimeType || $mimeType == 'text/markdown'}} disabled{{/if}}">Save</button>
+								<button id="save-page" type="button" class="btn btn-primary btn-sm disabled">Save</button>
 							</div>
 						</div>
 					</div>
@@ -82,27 +84,25 @@
 {{$wikiModal}}
 
 <div class="modal" id="embedPhotoModal" tabindex="-1" role="dialog" aria-labelledby="embedPhotoLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="embedPhotoModalLabel">{{$embedPhotosModalTitle}}</h4>
-      </div>
-     <div class="modal-body" id="embedPhotoModalBody" >
-         <div id="embedPhotoModalBodyAlbumListDialog" class="hide">
-            <div id="embedPhotoModalBodyAlbumList"></div>
-         </div>
-         <div id="embedPhotoModalBodyAlbumDialog" class="hide">
-         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">{{$embedPhotosModalCancel}}</button>
-        <button id="embed-photo-OKButton" type="button" class="btn btn-primary">{{$embedPhotosModalOK}}</button>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="embedPhotoModalLabel">{{$embedPhotosModalTitle}}</h4>
+			</div>
+			<div class="modal-body" id="embedPhotoModalBody" >
+				<div id="embedPhotoModalBodyAlbumListDialog" class="hide">
+					<div id="embedPhotoModalBodyAlbumList"></div>
+				</div>
+				<div id="embedPhotoModalBodyAlbumDialog" class="hide"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">{{$embedPhotosModalCancel}}</button>
+				<button id="embed-photo-OKButton" type="button" class="btn btn-primary">{{$embedPhotosModalOK}}</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
-
 
 <script>
 	window.wiki_resource_id = '{{$resource_id}}';
@@ -145,10 +145,10 @@
 		theme: "ace/theme/github",
 		mode: "ace/mode/markdown",
 
-		wrap: true,
-
-		minLines: 30,
 		maxLines: Infinity,
+		minLines: 30,
+
+		wrap: true,
 
 		printMargin: false
 	});
@@ -168,8 +168,16 @@
 	{{/if}}
 
 	$('#edit-pane-tab').click(function (ev) {
-		setTimeout(function() {window.editor.focus();}, 500); // Return the focus to the editor allowing immediate text entry
-			$('#page-tools').show();
+		setTimeout(function() {
+			window.editor.focus();
+			if($('main').hasClass('fullscreen')) {
+				adjustFullscreenEditorHeight();
+			}
+			else {
+				adjustInlineEditorHeight();
+			}
+		}, 500); // Return the focus to the editor allowing immediate text entry
+		$('#page-tools').show();
 	});
 
 	$('#wiki-get-preview').click(function (ev) {
@@ -215,11 +223,6 @@
 			if (data.success) {
 				$('#wiki_page_list_container').html(data.pages);
 				$('#wiki_page_list_container').show();
-				{{if $showNewPageButton}}
-					$('#new-page-button').show();
-				{{else}}
-					$('#new-page-button').hide();
-				{{/if}}
 			} else {
 				alert('Error fetching page list!');
 				window.console.log('Error fetching page list!');
@@ -241,6 +244,7 @@
 		{{/if}}
 
 		if (window.wiki_page_content === currentContent) {
+			$('#save-page').addClass('disabled');  // Disable the save button
 			window.console.log('No edits to save.');
 			ev.preventDefault();
 			return false;
@@ -256,9 +260,8 @@
 				window.console.log('Page saved successfully.');
 				window.wiki_page_content = currentContent;
 				$('#id_commitMsg').val(''); // Clear the commit message box
-
-				{{if !$mimeType || $mimeType == 'text/markdown'}}
 				$('#save-page').addClass('disabled');  // Disable the save button
+				{{if !$mimeType || $mimeType == 'text/markdown'}}
 				window.editor.getSession().getUndoManager().markClean();  // Reset the undo history for the editor
 				{{/if}}
 
@@ -322,6 +325,29 @@
 				window.console.log('Error comparing page.');
 			}
 		}, 'json');
+	}
+
+	function adjustFullscreenEditorHeight() {
+		$('#editor, #ace-editor').height($(window).height() - $('#id_commitMsg_wrapper').outerHeight(true) - $('.section-title-wrapper').outerHeight(true) - $('#wiki-nav-tabs').outerHeight(true) - 17);
+		{{if !$mimeType || $mimeType == 'text/markdown'}}
+		editor.setOptions({
+			maxLines: null,
+			minLines: null
+		});
+		editor.resize();
+		{{/if}}
+	}
+
+	function adjustInlineEditorHeight() {
+		{{if !$mimeType || $mimeType == 'text/markdown'}}
+		editor.setOptions({
+			maxLines: Infinity,
+			minLines: 30
+		});
+		editor.resize();
+		{{else}}
+		editor.height(editor[0].scrollHeight);
+		{{/if}}
 	}
 
 	$('#embed-image').click(function (ev) {
@@ -420,9 +446,6 @@
 
 	$(document).ready(function () {
 		wiki_refresh_page_list();
-		// This seems obsolete
-		// Show Edit tab first. Otherwise the Ace editor does not load.
-		//$("#wiki-nav-tabs li:eq(1) a").tab('show');
 
 		{{if !$mimeType || $mimeType == 'text/markdown'}}
 		$("#wiki-toc").toc({content: "#wiki-preview", headings: "h1,h2,h3,h4"});
@@ -434,7 +457,16 @@
 			}
 		});
 		{{else}}
+		window.editor.on("input", function() {
+			$('#save-page').removeClass('disabled');
+		});
 		window.editor.bbco_autocomplete('bbcode');
 		{{/if}}
+	});
+
+	$(window).resize(function () {
+		if($('main').hasClass('fullscreen')) {
+			adjustFullscreenEditorHeight();
+		}
 	});
 </script>

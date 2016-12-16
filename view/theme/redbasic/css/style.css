@@ -1067,10 +1067,11 @@ a.rconnect:hover, a.rateme:hover, div.rateme:hover {
 .contact-block-content {
 	margin-top: 10px;
 }
-.contact-block-img.archived {
+.contact-block-img.archived, .app-deleted {
 	opacity: 0.3;
 	filter:alpha(opacity=30);
 }
+
 
 .profile-match-connect { margin-top: 5px; }
 
@@ -1788,6 +1789,7 @@ nav .badge.mail-update:hover {
 
 #expand-aside,
 #expand-tabs,
+#doco-return-to-top-btn,
 #context-help-btn {
 	color: $nav_active_icon_colour;
 	padding: 7px 10px;
@@ -2038,6 +2040,12 @@ dl.bb-dl > dd > li {
 
 #wiki-preview img {
 	max-width: 100%;
+}
+
+#ace-editor,
+#editor {
+	border-bottom-left-radius: $radiuspx;
+	border-bottom-right-radius: $radiuspx;
 }
 
 .sub-menu {

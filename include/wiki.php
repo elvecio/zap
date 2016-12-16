@@ -14,12 +14,13 @@ function wiki_list($channel, $observer_hash) {
 			intval($channel['channel_id'])
 	);
 	if($wikis) {
-		foreach($wikis as &$w) {		
+		foreach($wikis as &$w) {
 			$w['rawName'] = get_iconfig($w, 'wiki', 'rawName');
 			$w['htmlName'] = get_iconfig($w, 'wiki', 'htmlName');
 			$w['urlName'] = get_iconfig($w, 'wiki', 'urlName');
 			$w['path'] = get_iconfig($w, 'wiki', 'path');
 			$w['mimeType'] = get_iconfig($w, 'wiki', 'mimeType');
+			$w['lock'] = (($w['allow_cid'] || $w['allow_gid'] || $w['deny_cid'] || $w['deny_gid']) ? true : false);
 		}
 	}
 	// TODO: query db for wikis the observer can access. Return with two lists, for read and write access
@@ -46,7 +47,7 @@ function wiki_page_list($resource_id) {
 		$i = 1;
 		foreach($files as $file) {
 			// strip the file extension and unwrap URL encoding to leave HTML encoded name
-			$title = substr($file, 0, -3);
+			$title = substr($file, 0, strrpos($file,'.'));
 			if(urldecode($title) !== 'Home') {
 				$pages[] = [
 					'resource_id' => $resource_id,
@@ -147,7 +148,7 @@ function wiki_create_wiki($channel, $observer_hash, $wiki, $acl) {
 	$item_id = $post['item_id'];
 
 	if ($item_id) {
-	   \Zotlabs\Daemon\Master::Summon(array('Notifier', 'activity', $item_id));
+		\Zotlabs\Daemon\Master::Summon(array('Notifier', 'activity', $item_id));
 		return array('item' => $post['item'], 'success' => true);
 	} else {
 		return array('item' => null, 'success' => false);
@@ -226,8 +227,8 @@ function wiki_get_permissions($resource_id, $owner_id, $observer_hash) {
 	$r = q("SELECT * FROM item WHERE uid = %d and resource_type = '%s' AND resource_id = '%s' $sql_extra LIMIT 1",
 		intval($owner_id),
 		dbesc(WIKI_ITEM_RESOURCE_TYPE), 
-        dbesc($resource_id)
-    );
+		dbesc($resource_id)
+	);
 
 	if (!$r) {
 		return array('read' => false, 'write' => false, 'success' => true);
@@ -579,36 +580,36 @@ function wiki_toc($content) {
 
   // look for markdown TOC items
   preg_match_all(
-    '/^(?:=|-|#).*$/m',
-    $source,
-    $matches,
-    PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE
+	'/^(?:=|-|#).*$/m',
+	$source,
+	$matches,
+	PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE
   );
 
   // preprocess: iterate matched lines to create an array of items
   // where each item is an array(level, text)
   $file_size = strlen($source);
   foreach ($matches[0] as $item) {
-    $found_mark = substr($item[0], 0, 1);
-    if ($found_mark == '#') {
-      // text is the found item
-      $item_text = $item[0];
-      $item_level = strrpos($item_text, '#') + 1;
-      $item_text = substr($item_text, $item_level);
-    } else {
-      // text is the previous line (empty if <hr>)
-      $item_offset = $item[1];
-      $prev_line_offset = strrpos($source, "\n", -($file_size - $item_offset + 2));
-      $item_text =
-        substr($source, $prev_line_offset, $item_offset - $prev_line_offset - 1);
-      $item_text = trim($item_text);
-      $item_level = $found_mark == '=' ? 1 : 2;
-    }
-    if (!trim($item_text) OR strpos($item_text, '|') !== FALSE) {
-      // item is an horizontal separator or a table header, don't mind
-      continue;
-    }
-    $raw_toc[] = ['level' => $item_level, 'text' => trim($item_text)];
+	$found_mark = substr($item[0], 0, 1);
+	if ($found_mark == '#') {
+	  // text is the found item
+	  $item_text = $item[0];
+	  $item_level = strrpos($item_text, '#') + 1;
+	  $item_text = substr($item_text, $item_level);
+	} else {
+	  // text is the previous line (empty if <hr>)
+	  $item_offset = $item[1];
+	  $prev_line_offset = strrpos($source, "\n", -($file_size - $item_offset + 2));
+	  $item_text =
+		substr($source, $prev_line_offset, $item_offset - $prev_line_offset - 1);
+	  $item_text = trim($item_text);
+	  $item_level = $found_mark == '=' ? 1 : 2;
+	}
+	if (!trim($item_text) OR strpos($item_text, '|') !== FALSE) {
+	  // item is an horizontal separator or a table header, don't mind
+	  continue;
+	}
+	$raw_toc[] = ['level' => $item_level, 'text' => trim($item_text)];
   }
 	$o = '';
 	foreach($raw_toc as $t) {

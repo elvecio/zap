@@ -2,11 +2,20 @@
 	position: relative;        
 	width: 100%;
 	height: 500px;
+	border: 1px solid #ccc;
+	border-top: 0px;
 }
 
 #editor {
 	width: 100%;
 	height: 500px;
+	border: 1px solid #ccc;
+	border-top: 0px;
+	display: inherit;
+}
+
+#id_commitMsg_wrapper {
+	margin-top: 3px;
 }
 
 .fade.in {
@@ -29,13 +38,13 @@
 	padding: 7px 3px 7px 10px;
 }
 
-#wikis-index th:nth-child(3),
-#wikis-index td:nth-child(3){
+#wikis-index th:nth-child(4),
+#wikis-index td:nth-child(4){
 	padding: 7px 10px 7px 7px;
 }
 
-#wikis-index th:nth-child(4),
-#wikis-index td:nth-child(4){
+#wikis-index th:nth-child(5),
+#wikis-index td:nth-child(5){
 	padding: 7px 10px 7px 7px;
 }
 
