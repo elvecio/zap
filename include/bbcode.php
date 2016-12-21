@@ -1067,15 +1067,15 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 		$Text = preg_replace("/\[zaudio\](.*?)\[\/zaudio\]/", '<a class="zid" href="$1" target="_blank" >$1</a>', $Text);
 	}
 
-	if ($tryoembed){
-		if (strpos($Text,'[/iframe]') !== false) {
-			$Text = preg_replace_callback("/\[iframe\](.*?)\[\/iframe\]/ism", 'bb_iframe', $Text);
-		}
-	} else {
-		if (strpos($Text,'[/iframe]') !== false) {
-			$Text = preg_replace("/\[iframe\](.*?)\[\/iframe\]/ism", '<a href="$1" target="_blank" >$1</a>', $Text);
-		}
-	}
+//	if ($tryoembed){
+//		if (strpos($Text,'[/iframe]') !== false) {
+//			$Text = preg_replace_callback("/\[iframe\](.*?)\[\/iframe\]/ism", 'bb_iframe', $Text);
+//		}
+//	} else {
+//		if (strpos($Text,'[/iframe]') !== false) {
+//			$Text = preg_replace("/\[iframe\](.*?)\[\/iframe\]/ism", '<a href="$1" target="_blank" >$1</a>', $Text);
+//		}
+//	}
 
 	// oembed tag
 	$Text = oembed_bbcode2html($Text);
@@ -1127,9 +1127,9 @@ function bbcode($Text, $preserve_nl = false, $tryoembed = true, $cache = false) 
 		$Text = preg_replace("/\<(.*?)(src|href)=(.*?)\&amp\;(.*?)\>/ism", '<$1$2=$3&$4>', $Text);
 
 	// This is subtle - it's an XSS filter. It only accepts links with a protocol scheme and where
-	// the scheme begins with z (zhttp), h (http(s)), f (ftp), m (mailto), and named anchors.
+	// the scheme begins with z (zhttp), h (http(s)), f (ftp(s)), m (mailto), t (tel) and named anchors.
 
-	$Text = preg_replace("/\<(.*?)(src|href)=\"[^zhfm#](.*?)\>/ism", '<$1$2="">', $Text);
+	$Text = preg_replace("/\<(.*?)(src|href)=\"[^zhfmt#](.*?)\>/ism", '<$1$2="">', $Text);
 
 	$Text = bb_replace_images($Text, $saved_images);
 
